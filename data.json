@@ -1,7 +1,7 @@
 {
  "pass": "278e1d4a83c8429e007fa13fbb349c4df9b2ee47e2dc708c3e31c56600d0f928",
  "settings": {
-  "mode": "off",
+  "mode": "window",
   "start": "16:20",
   "minutes": 60,
   "reset": 3
