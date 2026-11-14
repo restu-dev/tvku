@@ -1,10 +1,20 @@
 {
  "pass": "7ffd131138cfba29e3fa70e8852f773665fc1a618f664aebd1cb173d080b6415",
  "settings": {
-  "mode": "off",
-  "start": "15:00",
+  "mode": "window",
+  "start": "13:05",
   "minutes": 60,
   "reset": 0
  },
- "folders": []
+ "folders": [
+  {
+   "name": "Restu",
+   "videos": [
+    {
+     "id": "CXsb1KpVFqU",
+     "title": "وَلِمَنۡ خَافَ مَقَامَ رَبِّهٖ جَنَّتٰنِ"
+    }
+   ]
+  }
+ ]
 }
