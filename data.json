@@ -6,15 +6,5 @@
   "minutes": 60,
   "reset": 0
  },
- "folders": [
-  {
-   "name": "Contoh Folder",
-   "videos": [
-    {
-     "id": "9bZkp7q19f0",
-     "title": "Video contoh (ganti dari Admin)"
-    }
-   ]
-  }
- ]
+ "folders": []
 }
