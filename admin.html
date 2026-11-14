@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin TV Anak</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f1fa;color:#1b1740;font:16px/1.4 "Trebuchet MS","Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 80px}h1{font-size:26px}h2{font-size:19px;margin:0 0 10px}
+section{background:#fff;border-radius:14px;padding:16px;margin:0 0 16px;box-shadow:0 1px 4px #1b174022}
+input,select{font:inherit;padding:9px 10px;border:1px solid #b9b3d6;border-radius:8px;max-width:100%}
+button{font:inherit;padding:9px 14px;border:0;border-radius:8px;background:#3a3290;color:#fff;cursor:pointer}
+button.x{background:#b3261e;padding:4px 9px}button.s{background:#e3dffa;color:#1b1740}
+.r{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.r input.w{flex:1;min-width:160px}
+.v{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #eee}.v span{overflow:hidden;text-overflow:ellipsis}
+#bar{position:fixed;left:0;right:0;bottom:0;background:#1b1740;color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+#bar button{background:#ffd23f;color:#1b1740;font-weight:700}small{color:#6a6590}
+</style></head><body><main>
+<div id="login"><h1>Admin TV Anak</h1><section><h2>Masuk</h2><div class="r"><input id="pw" type="password" placeholder="Password"><button id="go">Masuk</button></div><small id="le"></small></section></div>
+<div id="adm" hidden>
+<h1>Admin TV Anak</h1>
+<section><h2>Batas waktu menonton</h2>
+<div class="r"><select id="mode"><option value="off">Tanpa batas</option><option value="window">Jadwal: mulai jam tertentu</option><option value="duration">Lama saja (total per hari)</option></select></div>
+<div class="r"><label>Mulai jam <input id="start" type="time"></label><label>Lama (menit) <input id="min" type="number" min="1" style="width:90px"></label></div>
+<small>Jadwal: TV hanya bisa dipakai antara jam mulai sampai jam mulai + lama. Lama saja: dihitung saat video diputar, reset tiap hari. Alarm berbunyi saat waktu habis.</small>
+<div class="r"><button class="s" id="rst">Reset waktu hari ini</button></div></section>
+<section><h2>Folder video</h2><div class="r"><input class="w" id="fn" placeholder="Nama folder baru"><button id="fa">Buat folder</button></div><div id="fl"></div></section>
+<section><h2>Koneksi GitHub</h2><small>Dipakai agar tombol Simpan langsung memperbarui data. Token disimpan hanya di perangkat ini.</small>
+<div class="r"><input id="go_o" placeholder="Username"><input id="go_r" placeholder="Nama repository"><input id="go_b" placeholder="Branch" value="main" style="width:90px"></div>
+<div class="r"><input class="w" id="go_t" type="password" placeholder="Token GitHub (izin Contents: read &amp; write)"></div></section>
+<section><h2>Ganti password</h2><div class="r"><input id="np" type="password" placeholder="Password baru"><button id="npb" class="s">Ganti</button></div></section>
+</div></main>
+<div id="bar" hidden><span id="msg">Belum ada perubahan.</span><span><button class="s" id="cp">Salin JSON</button> <button id="sv">Simpan ke GitHub</button></span></div>
+<script>
+let D,$=s=>document.getElementById(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hash=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+const cfg=()=>({o:$('go_o').value.trim(),r:$('go_r').value.trim(),b:$('go_b').value.trim()||'main',t:$('go_t').value.trim()});
+const msg=t=>$('msg').textContent=t,dirty=()=>msg('Ada perubahan, belum disimpan.');
+const gh=g=>({url:`https://api.github.com/repos/${g.o}/${g.r}/contents/data.json`,h:{Authorization:'Bearer '+g.t,Accept:'application/vnd.github+json'}});
+
+(function(){const c=JSON.parse(localStorage.getItem('gh')||'{}');$('go_o').value=c.o||location.hostname.split('.')[0]||'';$('go_r').value=c.r||location.pathname.split('/')[1]||'';$('go_b').value=c.b||'main';$('go_t').value=c.t||''})();
+['go_o','go_r','go_b','go_t'].forEach(i=>$(i).onchange=()=>localStorage.setItem('gh',JSON.stringify(cfg())));
+
+async function fetchData(){const g=cfg();if(g.o&&g.r&&g.t){try{const a=gh(g),r=await fetch(a.url+'?ref='+g.b+'&_='+Date.now(),{headers:{...a.h,Accept:'application/vnd.github.raw+json'}});if(r.ok)return await r.json()}catch(e){}}
+ return await (await fetch('data.json?'+Date.now())).json()}
+
+async function enter(){D=await fetchData();$('login').hidden=true;$('adm').hidden=false;$('bar').hidden=false;sessionStorage.setItem('ok','1');ui()}
+$('go').onclick=async()=>{try{const d=await (await fetch('data.json?'+Date.now())).json();if(await hash($('pw').value)===d.pass){sessionStorage.setItem('ph',d.pass);await enter()}else $('le').textContent='Password salah.'}catch(e){$('le').textContent='Gagal memuat data.'}};
+$('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
+if(sessionStorage.getItem('ok'))enter();
+
+function ui(){const s=D.settings;$('mode').value=s.mode;$('start').value=s.start;$('min').value=s.minutes;
+ $('fl').innerHTML=D.folders.map((f,i)=>`<div style="margin-top:14px"><div class="v" style="border:0"><b>📁 ${esc(f.name)}</b><button class="x" data-df="${i}">Hapus folder</button></div>`+
+ f.videos.map((v,j)=>`<div class="v"><span>${esc(v.title)}</span><button class="x" data-dv="${i}.${j}">Hapus</button></div>`).join('')+
+ `<div class="r"><input class="w" id="l${i}" placeholder="Tempel link YouTube"><button data-av="${i}">Tambah</button></div></div>`).join('')||'<small>Belum ada folder.</small>'}
+['mode','start','min'].forEach(i=>$(i).onchange=()=>{const s=D.settings;s.mode=$('mode').value;s.start=$('start').value||'15:00';s.minutes=+$('min').value||60;dirty()});
+$('rst').onclick=()=>{D.settings.reset=(D.settings.reset||0)+1;dirty()};
+$('fa').onclick=()=>{const n=$('fn').value.trim();if(!n)return;D.folders.push({name:n,videos:[]});$('fn').value='';ui();dirty()};
+$('npb').onclick=async()=>{const p=$('np').value;if(p.length<4)return msg('Password minimal 4 karakter.');D.pass=await hash(p);$('np').value='';dirty()};
+$('fl').onclick=async e=>{const b=e.target;if(b.dataset.df!==undefined){if(confirm('Hapus folder ini?')){D.folders.splice(+b.dataset.df,1);ui();dirty()}}
+ else if(b.dataset.dv){const[i,j]=b.dataset.dv.split('.');D.folders[i].videos.splice(+j,1);ui();dirty()}
+ else if(b.dataset.av!==undefined){const i=+b.dataset.av,v=$('l'+i).value.trim(),m=v.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/)||v.match(/^([\w-]{11})$/);if(!m)return msg('Link YouTube tidak dikenali.');
+  let t='Video '+m[1];try{const r=await fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+m[1]));if(r.ok)t=(await r.json()).title}catch(x){}
+  D.folders[i].videos.push({id:m[1],title:t});ui();dirty()}};
+$('cp').onclick=()=>navigator.clipboard.writeText(JSON.stringify(D,null,1)).then(()=>msg('JSON disalin. Tempel ke data.json di GitHub.'));
+$('sv').onclick=async()=>{const g=cfg();if(!g.o||!g.r||!g.t)return msg('Isi koneksi GitHub dulu (username, repository, token).');localStorage.setItem('gh',JSON.stringify(g));msg('Menyimpan...');
+ try{const a=gh(g);let sha;const r=await fetch(a.url+'?ref='+g.b,{headers:a.h});if(r.ok)sha=(await r.json()).sha;
+  const p=await fetch(a.url,{method:'PUT',headers:a.h,body:JSON.stringify({message:'Update data TV Anak',branch:g.b,sha,content:btoa(unescape(encodeURIComponent(JSON.stringify(D,null,1))))})});
+  msg(p.ok?'Tersimpan. TV membaca perubahan dalam 1-2 menit.':'Gagal menyimpan (kode '+p.status+'). Cek token dan nama repository.')}catch(e){msg('Gagal terhubung ke GitHub.')}};
+</script></body></html>
