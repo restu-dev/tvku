@@ -6,6 +6,8 @@
 main{max-width:1100px;margin:0 auto;padding:16px 14px 110px}h1{font-size:24px;margin:6px 0 14px}h2{font-size:18px;margin:0 0 10px}
 section{background:#fff;border-radius:14px;padding:14px;margin:0 0 14px;box-shadow:0 1px 4px #1b174022}
 input,select{font:inherit;font-size:16px;padding:9px 10px;border:1px solid #b9b3d6;border-radius:8px;max-width:100%;min-height:42px}
+textarea{font:inherit;font-size:16px;padding:9px 10px;border:1px solid #b9b3d6;border-radius:8px;width:100%}
+.lkb{width:100%;padding:16px;font-size:18px;font-weight:700}.lkb.on{background:#b3261e}.lkb.off{background:#0b6e4f}.chip{background:#e3dffa;color:#1b1740;padding:6px 10px;min-height:36px;font-size:14px}
 button{font:inherit;padding:9px 14px;min-height:42px;border:0;border-radius:8px;background:#3a3290;color:#fff;cursor:pointer}
 button.x{background:#b3261e;padding:6px 10px;min-height:38px}button.s{background:#e3dffa;color:#1b1740}button.m{background:#e3dffa;color:#1b1740;padding:6px 10px;min-height:38px}
 .r{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.r .w{flex:1;min-width:140px}
@@ -25,6 +27,12 @@ button.x{background:#b3261e;padding:6px 10px;min-height:38px}button.s{background
 <div class="r"><input class="w" id="fn" placeholder="Nama folder baru"><button id="fa">Buat folder</button><button class="s" id="ck">Periksa semua video</button></div>
 <div id="fl"></div></section></div>
 <div>
+<section><h2>Kunci TV</h2>
+<button id="lkb" class="lkb off"></button>
+<div class="r"><textarea id="lkm" rows="3" placeholder="Pesan di layar TV, misalnya: Waktunya makan siang"></textarea></div>
+<div class="r" id="chips"></div>
+<div class="r"><label><input type="checkbox" id="lks"> Bacakan pesan dengan suara di TV</label><button class="s" id="lkt">🔊 Uji suara</button></div>
+<small>Tombol kunci langsung menyimpan ke GitHub. Pesan yang diubah saat TV sudah terkunci berlaku setelah menekan Simpan. TV menerima perubahan dalam sekitar 1-3 menit.</small></section>
 <section><h2>Batas waktu menonton</h2>
 <div class="r"><select id="mode" class="w"><option value="off">Tanpa batas</option><option value="window">Jadwal: mulai jam tertentu</option><option value="duration">Lama saja (total per hari)</option></select></div>
 <div class="r"><label>Mulai jam<br><input id="start" type="time"></label><label>Lama (menit)<br><input id="min" type="number" min="1" style="width:100px"></label></div>
@@ -49,7 +57,7 @@ const gh=g=>({url:`https://api.github.com/repos/${g.o}/${g.r}/contents/data.json
 const ytid=v=>{const m=v.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/)||v.match(/^([\w-]{11})$/);return m&&m[1]};
 const oe=id=>fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id));
 function mv(a,i,d){const k=i+d;if(k<0||k>=a.length)return;[a[i],a[k]]=[a[k],a[i]]}
-function norm(){D.settings=Object.assign({mode:'off',start:'15:00',minutes:60,reset:0},D.settings);D.child=Object.assign({name:'',photo:''},D.child);D.folders.forEach(f=>{f.icon=f.icon||ICONS[0];f.color=f.color||COLORS[0]})}
+function norm(){D.settings=Object.assign({mode:'off',start:'15:00',minutes:60,reset:0},D.settings);D.child=Object.assign({name:'',photo:''},D.child);D.lock=Object.assign({on:false,msg:'',speak:true},D.lock);D.folders.forEach(f=>{f.icon=f.icon||ICONS[0];f.color=f.color||COLORS[0]})}
 
 (function(){const c=JSON.parse(localStorage.getItem('gh')||'{}');$('go_o').value=c.o||location.hostname.split('.')[0]||'';$('go_r').value=c.r||location.pathname.split('/')[1]||'';$('go_b').value=c.b||'main';$('go_t').value=c.t||''})();
 ['go_o','go_r','go_b','go_t'].forEach(i=>$(i).onchange=()=>localStorage.setItem('gh',JSON.stringify(cfg())));
@@ -61,13 +69,20 @@ $('go').onclick=async()=>{try{const d=await (await fetch('data.json?'+Date.now()
 $('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
 if(sessionStorage.getItem('ok'))enter();
 
-function ui(){const s=D.settings,c=D.child;$('mode').value=s.mode;$('start').value=s.start;$('min').value=s.minutes;$('cn').value=c.name;$('pv').hidden=!c.photo;if(c.photo)$('pv').src=c.photo;
+function ui(){const s=D.settings,c=D.child,L=D.lock;$('lkb').className='lkb '+(L.on?'on':'off');$('lkb').textContent=L.on?'🔒 TV DIKUNCI. Tekan untuk membuka':'🔓 TV tidak dikunci. Tekan untuk mengunci';$('lkm').value=L.msg;$('lks').checked=L.speak!==false;$('mode').value=s.mode;$('start').value=s.start;$('min').value=s.minutes;$('cn').value=c.name;$('pv').hidden=!c.photo;if(c.photo)$('pv').src=c.photo;
  $('fl').innerHTML=D.folders.map((f,i)=>`<div class="fo"><div class="fh"><select data-ic="${i}">${ICONS.map(x=>`<option${x===f.icon?' selected':''}>${x}</option>`).join('')}</select><input class="w" data-n="${i}" value="${esc(f.name)}">
  <button class="m" data-a="fup" data-i="${i}">▲</button><button class="m" data-a="fdn" data-i="${i}">▼</button><button class="x" data-a="fdel" data-i="${i}">Hapus</button></div>
  <div class="r">${COLORS.map(x=>`<button class="sw${x===f.color?' on':''}" style="background:${x}" data-a="col" data-i="${i}" data-c="${x}" aria-label="Warna"></button>`).join('')}</div>`+
  f.videos.map((v,j)=>`<div class="v"><span>${v.bad?'⚠ ':''}${esc(v.title)}</span><div>${v.bad?`<button class="m" data-a="bad" data-i="${i}" data-j="${j}" title="Tandai bisa diputar">OK?</button>`:''}<button class="m" data-a="vup" data-i="${i}" data-j="${j}">▲</button><button class="m" data-a="vdn" data-i="${i}" data-j="${j}">▼</button><button class="x" data-a="vdel" data-i="${i}" data-j="${j}">✕</button></div></div>`).join('')+
  `<div class="r"><input class="w" id="l${i}" placeholder="Tempel link YouTube"><button data-a="add" data-i="${i}">Tambah</button></div></div>`).join('')||'<small>Belum ada folder.</small>'}
 
+const PRE=['Waktunya makan','Waktunya tidur','Waktunya mandi','Waktunya belajar','Waktunya sholat','Ayo bantu mama'];
+$('chips').innerHTML=PRE.map(x=>`<button class="chip" data-p="${x}">${x}</button>`).join('');
+$('chips').onclick=e=>{const p=e.target.dataset.p;if(p){$('lkm').value=p;D.lock.msg=p;dirty()}};
+$('lkb').onclick=()=>{D.lock.on=!D.lock.on;D.lock.msg=$('lkm').value.trim();D.lock.speak=$('lks').checked;ui();dirty();$('sv').click()};
+$('lkm').onchange=()=>{D.lock.msg=$('lkm').value.trim();dirty()};
+$('lks').onchange=()=>{D.lock.speak=$('lks').checked;dirty()};
+$('lkt').onclick=()=>{try{const u=new SpeechSynthesisUtterance($('lkm').value.trim()||'Waktunya makan');u.lang='id-ID';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){msg('Perangkat ini tidak mendukung suara.')}};
 ['mode','start','min'].forEach(i=>$(i).onchange=()=>{const s=D.settings;s.mode=$('mode').value;s.start=$('start').value||'15:00';s.minutes=+$('min').value||60;dirty()});
 $('rst').onclick=()=>{D.settings.reset=(D.settings.reset||0)+1;dirty()};
 $('fa').onclick=()=>{const n=$('fn').value.trim();if(!n)return;D.folders.push({name:n,icon:ICONS[0],color:COLORS[0],videos:[]});$('fn').value='';ui();dirty()};
