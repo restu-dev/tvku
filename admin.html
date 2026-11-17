@@ -38,7 +38,7 @@ button.x{background:#b3261e;padding:6px 10px;min-height:38px}button.s{background
 <div class="r"><textarea id="lkm" rows="3" placeholder="Pesan di layar TV, misalnya: Waktunya makan siang"></textarea></div>
 <div class="r" id="chips"></div>
 <div class="r"><label><input type="checkbox" id="lks"> Bacakan pesan dengan suara di TV</label><button class="s" id="lkt">🔊 Uji suara</button></div>
-<small>Tombol kunci langsung menyimpan ke GitHub. Pesan yang diubah saat TV sudah terkunci berlaku setelah menekan Simpan. TV menerima perubahan dalam sekitar 1-3 menit.</small></section>
+<small id="lkn"></small></section>
 <section><h2>Batas waktu menonton</h2>
 <div class="r"><select id="mode" class="w"><option value="off">Tanpa batas</option><option value="window">Jadwal: mulai jam tertentu</option><option value="duration">Lama saja (total per hari)</option></select></div>
 <div class="r"><label>Mulai jam<br><input id="start" type="time"></label><label>Lama (menit)<br><input id="min" type="number" min="1" style="width:100px"></label></div>
@@ -80,12 +80,12 @@ function norm(){D.settings=Object.assign({mode:'off',start:'15:00',minutes:60,re
 
 async function fetchData(){const g=cfg();if(g.o&&g.r&&g.t){try{const a=gh(g),r=await fetch(a.url+'?ref='+g.b+'&_='+Date.now(),{headers:{...a.h,Accept:'application/vnd.github.raw+json'},cache:'no-store'});if(r.ok)return await r.json()}catch(e){}}
  return await (await fetch('data.json?'+Date.now())).json()}
-async function enter(){D=await fetchData();norm();$('login').hidden=true;$('adm').hidden=false;$('bar').hidden=false;sessionStorage.setItem('ok','1');ui()}
+async function enter(){D=await fetchData();norm();$('login').hidden=true;$('adm').hidden=false;$('bar').hidden=false;sessionStorage.setItem('ok','1');ui();if(FBOK)fbStart()}
 $('go').onclick=async()=>{try{const d=await (await fetch('data.json?'+Date.now())).json();if(await hash($('pw').value)===d.pass)await enter();else $('le').textContent='Password salah.'}catch(e){$('le').textContent='Gagal memuat data.'}};
 $('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
 if(sessionStorage.getItem('ok'))enter();
 
-function ui(){const s=D.settings,c=D.child,L=D.lock;$('lkb').className='lkb '+(L.on?'on':'off');$('lkb').textContent=L.on?'🔒 TV DIKUNCI. Tekan untuk membuka':'🔓 TV tidak dikunci. Tekan untuk mengunci';$('lkm').value=L.msg;$('lks').checked=L.speak!==false;$('mode').value=s.mode;$('start').value=s.start;$('min').value=s.minutes;$('cn').value=c.name;$('pv').hidden=!c.photo;if(c.photo)$('pv').src=c.photo;
+function ui(){const s=D.settings,c=D.child;lkUI();$('mode').value=s.mode;$('start').value=s.start;$('min').value=s.minutes;$('cn').value=c.name;$('pv').hidden=!c.photo;if(c.photo)$('pv').src=c.photo;
  $('fl').innerHTML=D.folders.map((f,i)=>`<div class="fo"><div class="fh"><select data-ic="${i}">${ICONS.map(x=>`<option${x===f.icon?' selected':''}>${x}</option>`).join('')}</select><input class="w" data-n="${i}" value="${esc(f.name)}">
  <button class="m" data-a="fup" data-i="${i}">▲</button><button class="m" data-a="fdn" data-i="${i}">▼</button><button class="x" data-a="fdel" data-i="${i}">Hapus</button></div>
  <div class="r">${COLORS.map(x=>`<button class="sw${x===f.color?' on':''}" style="background:${x}" data-a="col" data-i="${i}" data-c="${x}" aria-label="Warna"></button>`).join('')}</div>`+
@@ -95,9 +95,11 @@ function ui(){const s=D.settings,c=D.child,L=D.lock;$('lkb').className='lkb '+(L
 const PRE=['Waktunya makan','Waktunya tidur','Waktunya mandi','Waktunya belajar','Waktunya sholat','Ayo bantu mama'];
 $('chips').innerHTML=PRE.map(x=>`<button class="chip" data-p="${x}">${x}</button>`).join('');
 $('chips').onclick=e=>{const p=e.target.dataset.p;if(p){$('lkm').value=p;D.lock.msg=p;dirty()}};
-$('lkb').onclick=()=>{D.lock.on=!D.lock.on;D.lock.msg=$('lkm').value.trim();D.lock.speak=$('lks').checked;ui();dirty();$('sv').click()};
-$('lkm').onchange=()=>{D.lock.msg=$('lkm').value.trim();dirty()};
-$('lks').onchange=()=>{D.lock.speak=$('lks').checked;dirty()};
+const fbReady=()=>FBOK&&db&&auth&&auth.currentUser;
+$('lkb').onclick=()=>{if(FBOK){if(!fbReady()){alert('Masuk dulu ke Firebase di tab ⭐ Penilaian agar kunci real-time bekerja.');tab(2);return}ref('lock').set({on:!(A.lock&&A.lock.on),msg:$('lkm').value.trim(),speak:$('lks').checked,ts:TS()});return}
+ D.lock.on=!D.lock.on;D.lock.msg=$('lkm').value.trim();D.lock.speak=$('lks').checked;ui();dirty();$('sv').click()};
+$('lkm').onchange=()=>{if(FBOK){if(fbReady())ref('lock/msg').set($('lkm').value.trim());return}D.lock.msg=$('lkm').value.trim();dirty()};
+$('lks').onchange=()=>{if(FBOK){if(fbReady())ref('lock/speak').set($('lks').checked);return}D.lock.speak=$('lks').checked;dirty()};
 $('lkt').onclick=()=>{try{const u=new SpeechSynthesisUtterance($('lkm').value.trim()||'Waktunya makan');u.lang='id-ID';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){msg('Perangkat ini tidak mendukung suara.')}};
 ['mode','start','min'].forEach(i=>$(i).onchange=()=>{const s=D.settings;s.mode=$('mode').value;s.start=$('start').value||'15:00';s.minutes=+$('min').value||60;dirty()});
 $('rst').onclick=()=>{D.settings.reset=(D.settings.reset||0)+1;dirty()};
@@ -148,12 +150,15 @@ const ref=p=>db.ref('app/'+p),TS=()=>firebase.database.ServerValue.TIMESTAMP;
 const ava=k=>{const p=PH[k.id];return p?`<img class="avt" src="${p}" alt="">`:`<span class="avt">${esc((k.name||'?')[0])}</span>`};
 day0=ds(new Date());
 
+function lkUI(){const L=FBOK?(A.lock||{}):D.lock;$('lkb').className='lkb '+(L.on?'on':'off');$('lkb').textContent=L.on?'🔒 TV DIKUNCI. Tekan untuk membuka':'🔓 TV tidak dikunci. Tekan untuk mengunci';
+ if(document.activeElement!==$('lkm'))$('lkm').value=L.msg||'';$('lks').checked=L.speak!==false;
+ $('lkn').textContent=FBOK?(auth&&auth.currentUser?'Real-time lewat Firebase: TV terkunci dalam beberapa detik. Perubahan pesan langsung terkirim.':'Masuk Firebase di tab ⭐ Penilaian agar kunci bekerja real-time.'):'Tombol kunci menyimpan ke GitHub. TV menerima dalam sekitar 1-3 menit.'}
 function tab(n){$('pv1').hidden=n!==1;$('pv2').hidden=n!==2;$('t1').className='tb'+(n===1?' on':'');$('t2').className='tb'+(n===2?' on':'');$('bar').hidden=n!==1;if(n===2)fbStart()}
 $('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
 
 function fbStart(){if(!FBOK){$('fbno').hidden=false;return}if(db)return;
  firebase.initializeApp(FBC);auth=firebase.auth();db=firebase.database();
- auth.onAuthStateChanged(u=>{$('fbin').hidden=!!u;$('fbon').hidden=!u;if(u&&!listening){listening=true;ref('').on('value',s=>{A=s.val()||{};R()});db.ref('photos').on('value',s=>{PH=s.val()||{};R()})}})}
+ auth.onAuthStateChanged(u=>{$('fbin').hidden=!!u;$('fbon').hidden=!u;lkUI();if(u&&!listening){listening=true;ref('').on('value',s=>{A=s.val()||{};R();lkUI()});db.ref('photos').on('value',s=>{PH=s.val()||{};R()})}})}
 $('fgo').onclick=()=>auth.signInWithEmailAndPassword($('fe').value.trim(),$('fp').value).catch(e=>$('fer').textContent='Gagal masuk ('+e.code+'). Cek email dan password.');
 $('fp').onkeydown=e=>{if(e.key==='Enter')$('fgo').click()};
 
