@@ -21,7 +21,7 @@ h1{font-size:4.2vh;margin:0 0 3vh;font-weight:700}
 #pl{position:fixed;inset:0;background:#000;display:none;z-index:5}
 #pl #player{width:100%;height:100%}#sh{position:absolute;inset:0}
 #note{position:fixed;top:2vh;right:3vw;background:#ffd23f;color:#1b1740;padding:1vh 2vh;border-radius:1vh;font-size:2.8vh;font-weight:700;display:none;z-index:9}
-#tm{position:fixed;right:2vw;bottom:2vh;background:#000a;padding:.8vh 1.8vh;border-radius:1vh;font-size:2.4vh;z-index:10;display:none}
+#tm{position:fixed;left:2vw;bottom:2vh;background:#000a;padding:.8vh 1.8vh;border-radius:1vh;font-size:2.4vh;z-index:10;display:none}
 #lk{position:fixed;inset:0;display:none;z-index:20;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3vh 5vw;overflow:hidden}
 #lk.a{background:linear-gradient(#1b1740,#4b3a9e 70%,#7b5fd0)}
 #lk.b{background:linear-gradient(#4fb8ea,#bfeaff 70%,#fff1b8);color:#1b1740}
@@ -191,10 +191,14 @@ async function pull(){if(!FB_ON)return;try{const r=await fetch(DB+'/app.json?_='
  try{localStorage.setItem('kp',JSON.stringify(PH))}catch(e){}onData()}catch(e){}}
 function conn(){if(!FB_ON||!window.EventSource)return;try{const es=new EventSource(DB+'/app.json'),h=()=>{clearTimeout(pT);pT=setTimeout(pull,300)};es.addEventListener('put',h);es.addEventListener('patch',h)}catch(e){}}
 function onData(){const e=A.events&&A.events.last;if(e&&e.ts){if(seenTs===null)seenTs=e.ts;else if(e.ts!==seenTs){seenTs=e.ts;cele(e)}}
- const hk=kidsOn().length>0;if(view==='stars')drawStars();else if(view==='folders'&&hk!==hadKids){hadKids=hk;draw()}}
+ const hk=kidsOn().length>0;
+ if(view==='stars')drawStars();
+ else if(view==='folders'){if(hk!==hadKids){hadKids=hk;draw()}else{const el=document.querySelector('.sc');if(el)el.innerHTML=scTxt()}}}
 
-function starCard(){const ks=kidsOn();if(!FB_ON||!ks.length)return '';const t=ds(new Date());
- return `<button class="c f" style="--bg:linear-gradient(135deg,#ff9f1c,#e4572e)" data-s><i>⭐</i>Bintang Hebat<small>${ks.map(k=>esc(k.name)+' '+dayTot(k.id,t)+'⭐').join(' · ')}</small></button>`}
+/* Ringkasan bintang hari ini di kartu "Bintang Hebat" (dipisah agar bisa diperbarui langsung tanpa menggambar ulang) */
+function scTxt(){const t=ds(new Date());return kidsOn().map(k=>esc(k.name)+' '+dayTot(k.id,t)+'⭐').join(' · ')}
+function starCard(){const ks=kidsOn();if(!FB_ON||!ks.length)return '';
+ return `<button class="c f" style="--bg:linear-gradient(135deg,#ff9f1c,#e4572e)" data-s><i>⭐</i>Bintang Hebat<small class="sc">${scTxt()}</small></button>`}
 
 function panel(k,t){const ac=acts(k.id),s=scOf(k.id,t),tot=dayTot(k.id,t),wt=weekTot(k.id),rw=rewOf(k.id),mon=ds(monday(new Date()));
  const cl=rw&&A.claimed&&A.claimed[rw.id]&&A.claimed[rw.id][k.id]&&A.claimed[rw.id][k.id][mon],pct=rw?Math.min(100,Math.round(wt/rw.target*100)):0,done=rw&&wt>=rw.target;
