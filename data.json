@@ -3,7 +3,7 @@
  "settings": {
   "mode": "duration",
   "start": "06:00",
-  "minutes": 60,
+  "minutes": 1,
   "reset": 6
  },
  "folders": [
@@ -12,15 +12,18 @@
    "videos": [
     {
      "id": "xJc5Nm5oN4c",
-     "title": "Eps.42 Super Pop Rocks🍬😆| Kota Air🌊| Kartun Anak | Kepala Polisi Labrador | BabyBus Bahasa Indonesia"
+     "title": "Eps.42 Super Pop Rocks🍬😆| Kota Air🌊| Kartun Anak | Kepala Polisi Labrador | BabyBus Bahasa Indonesia",
+     "bad": false
     },
     {
      "id": "IhqdqRlFxpU",
-     "title": "Keselamatan Gempa Bumi di Jalan | Tim Penyelamat Super 🐼| Kartun Anak | BabyBus Bahasa Indonesia"
+     "title": "Keselamatan Gempa Bumi di Jalan | Tim Penyelamat Super 🐼| Kartun Anak | BabyBus Bahasa Indonesia",
+     "bad": false
     },
     {
      "id": "kQLIDVVBynI",
-     "title": "Keran Ajaib🚰✨| Seri Baru: Labrador & Dodo | Animasi Lucu | Kartun Anak-anak | Kepala Polisi Labrador"
+     "title": "Keran Ajaib🚰✨| Seri Baru: Labrador & Dodo | Animasi Lucu | Kartun Anak-anak | Kepala Polisi Labrador",
+     "bad": false
     }
    ],
    "icon": "🚗",
@@ -39,59 +42,73 @@
    "videos": [
     {
      "id": "x_UU_GYK1A8",
-     "title": "Anggur Sedekah Kok Dimakan? Jangan Ambil yang Bukan Hakmu! | Kisah Teladan Nabi | Cerita Islami"
+     "title": "Anggur Sedekah Kok Dimakan? Jangan Ambil yang Bukan Hakmu! | Kisah Teladan Nabi | Cerita Islami",
+     "bad": false
     },
     {
      "id": "JMXsGakpKDk",
-     "title": "Menjaga Persahabatan dengan Saling Menghargai | Kisah Teladan Nabi | Cerita Islami | Cerita Muslim"
+     "title": "Menjaga Persahabatan dengan Saling Menghargai | Kisah Teladan Nabi | Cerita Islami | Cerita Muslim",
+     "bad": false
     },
     {
      "id": "iZ5OogE2_zA",
-     "title": "Kenapa Insya Allah Terus? Bica Kecewa Karena Janji Batal! Siapa yang Salah? | Kisah Teladan Nabi"
+     "title": "Kenapa Insya Allah Terus? Bica Kecewa Karena Janji Batal! Siapa yang Salah? | Kisah Teladan Nabi",
+     "bad": false
     },
     {
      "id": "55FHlO6i9Lw",
-     "title": "Hazeem Tandai Semua Tempat Duduk! Kabi & Bica Jadi Nggak Kebagian Kursi | Kisah Teladan Nabi"
+     "title": "Hazeem Tandai Semua Tempat Duduk! Kabi & Bica Jadi Nggak Kebagian Kursi | Kisah Teladan Nabi",
+     "bad": false
     },
     {
      "id": "SUoOfmvUhJk",
-     "title": "Astagfirullah! Kabi Nekat Manjat Almari?! Ada Apa di Atas? | Kisah Teladan Nabi | Cerita Islami"
+     "title": "Astagfirullah! Kabi Nekat Manjat Almari?! Ada Apa di Atas? | Kisah Teladan Nabi | Cerita Islami",
+     "bad": false
     },
     {
      "id": "AHW0WVa5sP4",
-     "title": "Kabi Menemukan Uang di Jalan, Apa Hukumnya dalam Islam? | Kisah Teladan Nabi | Cerita Islami Muslim"
+     "title": "Kabi Menemukan Uang di Jalan, Apa Hukumnya dalam Islam? | Kisah Teladan Nabi | Cerita Islami Muslim",
+     "bad": false
     },
     {
      "id": "fMMyz7PghKE",
-     "title": "Anak Muslim Hebat! Punya Adab dalam Setiap Kegiatan! Kisah Teladan Nabi | Cerita Islami Anak Muslim"
+     "title": "Anak Muslim Hebat! Punya Adab dalam Setiap Kegiatan! Kisah Teladan Nabi | Cerita Islami Anak Muslim",
+     "bad": false
     },
     {
      "id": "gx2kh3vCeVA",
-     "title": "Tidak Takut Lagi, Allah Menjagaku | Kisah Teladan Nabi | Cerita Islami | Cerita Muslim | Adab"
+     "title": "Tidak Takut Lagi, Allah Menjagaku | Kisah Teladan Nabi | Cerita Islami | Cerita Muslim | Adab",
+     "bad": false
     },
     {
      "id": "q_zBo9RWZ1A",
-     "title": "Awas, Bumi Rusak! Siapa Buang Sampah Sembarangan? | Kisah Teladan Nabi | Cerita Islami Anak Muslim"
+     "title": "Awas, Bumi Rusak! Siapa Buang Sampah Sembarangan? | Kisah Teladan Nabi | Cerita Islami Anak Muslim",
+     "bad": false
     },
     {
      "id": "XSTa1SfHZmU",
-     "title": "Lucu Banget! Kabi & Bica Belajar Adab Bersin dari Sunnah Rasulullah | Kisah Teladan Nabi"
+     "title": "Lucu Banget! Kabi & Bica Belajar Adab Bersin dari Sunnah Rasulullah | Kisah Teladan Nabi",
+     "bad": false
     },
     {
      "id": "gu0p3WF3r4U",
-     "title": "Jejak Aneh di Rumah Kabi! Ada yang Masuk Saat Mereka Lupa Berdoa! | Kisah Teladan Nabi"
+     "title": "Jejak Aneh di Rumah Kabi! Ada yang Masuk Saat Mereka Lupa Berdoa! | Kisah Teladan Nabi",
+     "bad": false
     },
     {
      "id": "AL_hlk99tt4",
-     "title": "Jangan Tolak Makanan! Bica Belajar dari Kisah Nabi Ismail - Selamat Idul Adha | Kisah Teladan Nabi"
+     "title": "Jangan Tolak Makanan! Bica Belajar dari Kisah Nabi Ismail - Selamat Idul Adha | Kisah Teladan Nabi",
+     "bad": false
     },
     {
      "id": "cpOuozMrsyc",
-     "title": "Aduh Panasnya! Gara-Gara AC Rusak, Kabi dan Bica Melakukan Kesalahan Besar! | Kisah Teladan Nabi"
+     "title": "Aduh Panasnya! Gara-Gara AC Rusak, Kabi dan Bica Melakukan Kesalahan Besar! | Kisah Teladan Nabi",
+     "bad": false
     },
     {
      "id": "wm2irMgfhvM",
-     "title": "Kabi & Bica Ketahuan! Makanannya Jadi Busuk! | Cerita Adab Makan Islami | Kisah Teladan Nabi"
+     "title": "Kabi & Bica Ketahuan! Makanannya Jadi Busuk! | Cerita Adab Makan Islami | Kisah Teladan Nabi",
+     "bad": false
     }
    ]
   },
@@ -102,27 +119,33 @@
    "videos": [
     {
      "id": "O8aTkSOMUCU",
-     "title": "MUROTTAL JUZ 30 METODE UMMI || JUZ AMMA ANAK || FULL ANIMASI COMO"
+     "title": "MUROTTAL JUZ 30 METODE UMMI || JUZ AMMA ANAK || FULL ANIMASI COMO",
+     "bad": false
     },
     {
      "id": "-M91zIG4Z24",
-     "title": "Murottal Anak Juz 30 - Riko The Series (Qur'an Recitation for Kids)"
+     "title": "Murottal Anak Juz 30 - Riko The Series (Qur'an Recitation for Kids)",
+     "bad": false
     },
     {
      "id": "NOzHmhC6vxA",
-     "title": "Murottal Anak Juz 30 Metode Ummi | Kartun Tayo Terbaru 2023"
+     "title": "Murottal Anak Juz 30 Metode Ummi | Kartun Tayo Terbaru 2023",
+     "bad": false
     },
     {
      "id": "Jw5ds8JjjlI",
-     "title": "Murottal Juz 30 - Animasi Babybus - Metode Ummi"
+     "title": "Murottal Juz 30 - Animasi Babybus - Metode Ummi",
+     "bad": false
     },
     {
      "id": "JhDAiE5bB18",
-     "title": "Kartun Semut Murottal Juz 30 Metode UMMI"
+     "title": "Kartun Semut Murottal Juz 30 Metode UMMI",
+     "bad": false
     },
     {
      "id": "MAzEgEVtj8Q",
-     "title": "Murottal Anak Juz 30 Metode UMMI - Polisi Labrador"
+     "title": "Murottal Anak Juz 30 Metode UMMI - Polisi Labrador",
+     "bad": false
     }
    ]
   }
