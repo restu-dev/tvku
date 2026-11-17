@@ -104,8 +104,29 @@ function tone(n,f){if(!actx)return;const t=actx.currentTime;for(let i=0;i<n;i++)
 function alarm(){if(!actx)return;const N=[523,659,784,1047,784,659,523],t=actx.currentTime;for(let r=0;r<3;r++)N.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),s=t+r*3+i*.4;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.3,s);g.gain.exponentialRampToValueAtTime(.001,s+.38);o.connect(g);g.connect(actx.destination);o.start(s);o.stop(s+.4)})}
 function warn(m){const n=$('#note');n.textContent='⏳ Sisa waktu '+m+' menit';n.style.display='block';tone(m===1?3:m===5?2:1);setTimeout(()=>n.style.display='none',7000)}
 function show(s,on){$(s).style.display=on?(s==='#lk'?'flex':'block'):'none'}
-function say(x){try{const s=window.speechSynthesis;if(!s||!x)return;s.cancel();const u=new SpeechSynthesisUtterance(x);u.lang='id-ID';u.rate=.85;const v=(s.getVoices()||[]).find(y=>/^id/i.test(y.lang));if(v)u.voice=v;s.speak(u)}catch(e){}}
-function unlock(){clearTimeout(lkT);try{speechSynthesis.cancel()}catch(e){}}
+/* TTS: utamakan engine Android via Fully Kiosk, cadangan Web Speech API */
+function say(x){
+  if(!x)return;
+  // 1) Engine TTS Android lewat Fully Kiosk (paling andal, butuh JavaScript Interface PLUS)
+  if(typeof fully!=='undefined'&&fully.textToSpeech){
+    try{fully.textToSpeech(x,'id-ID');return}catch(e){}
+    try{fully.textToSpeech(x);return}catch(e){}
+  }
+  // 2) Cadangan: Web Speech API
+  try{
+    const s=window.speechSynthesis;if(!s)return;
+    const go=()=>{const u=new SpeechSynthesisUtterance(x);u.lang='id-ID';u.rate=.85;
+      const v=(s.getVoices()||[]).find(y=>/^id/i.test(y.lang));if(v)u.voice=v;
+      u.onerror=e=>console.log('TTS error:',e.error);
+      s.speak(u)};
+    if(s.speaking||s.pending){s.cancel();setTimeout(go,200)}else go();
+  }catch(e){}
+}
+function unlock(){
+  clearTimeout(lkT);
+  try{if(typeof fully!=='undefined'&&fully.stopTextToSpeech)fully.stopTextToSpeech()}catch(e){}
+  try{speechSynthesis.cancel()}catch(e){}
+}
 function lock(st){locked=true;lkKey=st.why+'|'+(st.msg||'');stop();show('#lk',1);$('#tm').style.display='none';$('#note').style.display='none';
  const man=st.why==='manual',bf=st.why==='before',nm=(D.child&&D.child.name)||'',L=$('#lk');
  const stars=(e,n)=>Array.from({length:n},(_,i)=>`<span class="st" style="left:${(i*37+8)%92}%;top:${(i*53+5)%80}%;animation-delay:${(i%5)*.4}s">${e}</span>`).join('');
