@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tes Suara</title>
+<style>body{margin:0;background:#1b1740;color:#fff;font:3vh/1.4 "Trebuchet MS",sans-serif;padding:4vh 5vw}
+button{font:inherit;padding:1.5vh 3vh;margin:1vh 1vh 1vh 0;border:.5vh solid transparent;border-radius:1.5vh;background:#3a3290;color:#fff}
+button:focus{border-color:#ffd23f;outline:none}li{margin:.6vh 0}.ok{color:#7CFC9A}.no{color:#ff8a80}</style></head><body>
+<h1>Tes Suara Browser</h1>
+<p>Halaman ini memeriksa apakah browser di TV bisa berbicara. Tekan tombol di bawah dengan remote.</p>
+<ul id="r"></ul>
+<button id="b1">1. Tes bunyi bip</button>
+<button id="b2">2. Tes suara bawaan browser</button>
+<button id="b3">3. Tes suara Fully Kiosk</button>
+<button id="b4">4. Tes WallPanel (REST)</button>
+<script>
+const r=document.getElementById('r');
+function row(t,ok){const l=document.createElement('li');l.className=ok?'ok':'no';l.textContent=(ok?'✔ ':'✘ ')+t;r.appendChild(l)}
+const ss=window.speechSynthesis,fl=window.fully&&typeof fully.textToSpeech==='function';
+row('speechSynthesis (suara bawaan browser): '+(ss?'ada':'TIDAK ada'),!!ss);
+row('Fully Kiosk textToSpeech: '+(fl?'ada':'tidak ada (butuh Fully PLUS dan JavaScript Interface aktif)'),fl);
+if(ss){const v=ss.getVoices();row('Jumlah suara terpasang: '+v.length+(v.some(x=>/^id/i.test(x.lang))?' (ada bahasa Indonesia)':' (tanpa bahasa Indonesia)'),v.length>0)}
+const T='Halo. Ini tes suara. Waktunya makan.';
+document.getElementById('b1').onclick=()=>{try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.connect(c.destination);o.start();o.stop(c.currentTime+.5)}catch(e){row('Bip gagal: '+e.message,false)}};
+document.getElementById('b2').onclick=()=>{try{const u=new SpeechSynthesisUtterance(T);u.lang='id-ID';ss.cancel();ss.speak(u)}catch(e){row('Suara bawaan gagal: '+e.message,false)}};
+document.getElementById('b3').onclick=()=>{try{fully.textToSpeech(T,'id-ID')}catch(e){row('Fully TTS gagal: '+e.message,false)}};
+document.getElementById('b4').onclick=()=>{fetch('http://127.0.0.1:2971/api/command',{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({speak:T})}).then(()=>row('Perintah ke WallPanel terkirim. Kalau ada suara, tambahkan ?wp=1 di alamat TV.',true)).catch(e=>row('Tidak bisa menghubungi WallPanel di perangkat ini: '+e.message,false))};
+document.getElementById('b1').focus();
+</script></body></html>

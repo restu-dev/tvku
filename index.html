@@ -104,7 +104,9 @@ function tone(n,f){if(!actx)return;const t=actx.currentTime;for(let i=0;i<n;i++)
 function alarm(){if(!actx)return;const N=[523,659,784,1047,784,659,523],t=actx.currentTime;for(let r=0;r<3;r++)N.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),s=t+r*3+i*.4;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.3,s);g.gain.exponentialRampToValueAtTime(.001,s+.38);o.connect(g);g.connect(actx.destination);o.start(s);o.stop(s+.4)})}
 function warn(m){const n=$('#note');n.textContent='⏳ Sisa waktu '+m+' menit';n.style.display='block';tone(m===1?3:m===5?2:1);setTimeout(()=>n.style.display='none',7000)}
 function show(s,on){$(s).style.display=on?(s==='#lk'?'flex':'block'):'none'}
-function say(x){if(!x)return;
+const WP=/[?&]wp=1/.test(location.search);
+function wp(x){try{fetch('http://127.0.0.1:2971/api/command',{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({speak:x})}).catch(()=>{})}catch(e){}}
+function say(x){if(!x)return;if(WP){wp(x);return}
  try{if(window.fully&&typeof fully.textToSpeech==='function'){if(typeof fully.stopTextToSpeech==='function')fully.stopTextToSpeech();fully.textToSpeech(x,'id-ID');return}}catch(e){}
  try{const s=window.speechSynthesis;if(!s)return;s.cancel();const u=new SpeechSynthesisUtterance(x);u.lang='id-ID';u.rate=.85;const v=(s.getVoices()||[]).find(y=>/^id/i.test(y.lang));if(v)u.voice=v;s.speak(u)}catch(e){}}
 function unlock(){clearTimeout(lkT);try{if(window.fully&&typeof fully.stopTextToSpeech==='function')fully.stopTextToSpeech()}catch(e){}try{speechSynthesis.cancel()}catch(e){}}
