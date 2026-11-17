@@ -1,0 +1,14 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "app": {
+      ".read": true,
+      ".write": "auth != null && auth.uid === 'UID_ADMIN'"
+    },
+    "photos": {
+      ".read": true,
+      ".write": "auth != null && auth.uid === 'UID_ADMIN'"
+    }
+  }
+}
