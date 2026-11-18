@@ -42,7 +42,7 @@ button.x{background:#b3261e;padding:6px 10px;min-height:38px}button.s{background
 <section><h2>Batas waktu menonton</h2>
 <div class="r"><select id="mode" class="w"><option value="off">Tanpa batas</option><option value="window">Jadwal: mulai jam tertentu</option><option value="duration">Lama saja (total per hari)</option></select></div>
 <div class="r"><label>Mulai jam<br><input id="start" type="time"></label><label>Lama (menit)<br><input id="min" type="number" min="1" style="width:100px"></label></div>
-<small>Jadwal: TV aktif dari jam mulai selama lama yang dipilih. Lama saja: dihitung saat video diputar, reset tiap hari. Peringatan berbunyi di sisa 10, 5, dan 1 menit, lalu alarm saat habis.</small>
+<small>Batas waktu hanya berlaku untuk memutar video. Folder dan Bintang Hebat tetap bisa dibuka. Jadwal: video bisa diputar dari jam mulai selama lama yang dipilih. Lama saja: dihitung saat video diputar, reset tiap hari. Peringatan berbunyi di sisa 10, 5, dan 1 menit, lalu alarm saat habis.</small>
 <div class="r"><button class="s" id="rst">Reset waktu hari ini</button></div></section>
 <section><h2>Layar sambutan</h2><div class="r"><img id="pv" class="av" alt="" hidden><div class="w"><input id="cn" placeholder="Nama anak" style="width:100%"></div></div>
 <div class="r"><input id="cf" type="file" accept="image/*"><button class="s" id="cr">Hapus foto</button></div><small>Foto dipotong persegi dan dikecilkan otomatis. Kosongkan nama dan foto untuk melewati layar sambutan.</small></section>
@@ -187,8 +187,8 @@ function rTr(){const ks=ls(A.kids),mon=ds(monday(new Date()));$('tr').innerHTML=
 
 function rTh(){const ks=ls(A.kids),L=['Sen','Sel','Rab','Kam','Jum','Sab','Min'];$('th').innerHTML='<h2>Riwayat minggu ini</h2>'+(ks.length?'<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;text-align:center"><tr><th style="text-align:left">Anak</th>'+L.map(x=>'<th>'+x+'</th>').join('')+'<th>Total</th></tr>'+ks.map(k=>`<tr style="border-top:1px solid #eee"><td style="text-align:left;padding:8px 0">${esc(k.name)}</td>`+wdays().map(x=>'<td>'+dayTot(k.id,ds(x))+'</td>').join('')+`<td><b>${weekTot(k.id)}</b></td></tr>`).join('')+'</table></div>':none)+'<div class="r"><button class="s" data-act="clean">Bersihkan riwayat lebih dari 60 hari</button></div>'}
 
-function setScore(k,a,d,n){const cur=+scOf(k,d)[a]||0,r=ref(`scores/${k}/${d}/${a}`);n?r.set(n):r.remove();
- if(n>cur&&d===ds(new Date())){const kid=A.kids[k],ac=A.activities[a],tot=dayTot(k,d)-cur+n;ref('events/last').set({kid:k,stars:n,ts:TS(),text:`Hebat, ${kid.name}! ${ac.name} dapat ${n} bintang. Hari ini sudah ${tot} bintang!`})}}
+function setScore(k,a,d,n){const cur=+scOf(k,d)[a]||0,before=dayTot(k,d),r=ref(`scores/${k}/${d}/${a}`);n?r.set(n):r.remove();
+ if(n>cur&&d===ds(new Date())){const kid=A.kids[k],ac=A.activities[a],tot=before-cur+n;ref('events/last').set({kid:k,stars:n,ts:TS(),text:`Hebat, ${kid.name}! ${ac.name} dapat ${n} bintang. Hari ini sudah ${tot} bintang!`})}}
 function mv(path,list,id,dir){const i=list.findIndex(x=>x.id===id),j=i+dir;if(j<0||j>=list.length)return;const a=list[i],b=list[j],u={};u[a.id+'/order']=b.order||j;u[b.id+'/order']=a.order||i;if(u[a.id+'/order']===u[b.id+'/order'])u[a.id+'/order']=u[b.id+'/order']+dir;ref(path).update(u)}
 function pic(file,cb){const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=256;c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);URL.revokeObjectURL(u);cb(c.toDataURL('image/jpeg',.75))};im.src=u}
 
