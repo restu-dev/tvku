@@ -76,10 +76,12 @@ h1{font-size:4.2vh;margin:0 0 3vh;font-weight:700}
 @keyframes fall{to{transform:translateY(120vh) rotate(540deg)}}
 .hint2{font-size:3vh;margin-top:2vh;opacity:.85}
 .tb2{background:#ffd23f;color:#1b1740;border-radius:2vh;padding:1.2vh 2vw;font-size:2.8vh;font-weight:700;margin:0 0 2.5vh}
+#hint{position:fixed;top:2vh;left:2vw;background:#000a;padding:.8vh 1.8vh;border-radius:1vh;font-size:2.4vh;z-index:9;display:none}
+.sv .st{pointer-events:none}.sv .b{position:relative;z-index:2;margin-bottom:1.5vh}
 </style></head><body>
 <div id="app"></div>
 <div id="pl"><div id="player"></div><div id="sh"></div></div>
-<div id="note"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div>
+<div id="note"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div><div id="hint"></div>
 <div id="lk"></div>
 <script src="firebase-config.js"></script>
 <script>
@@ -160,20 +162,21 @@ $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const 
  else if(d.v!==undefined)play(+d.v);else back()};
 
 function sl(){localStorage.setItem('last',JSON.stringify({f:fi,id:Q[qi].id}))}
-function play(i){const v=D.folders[fi].videos[i];if(locked||v.bad)return;audio();const vs=vstat();if(!vs.ok){tuShow(vs,false);return}Q=D.folders[fi].videos;qi=i;view='play';paused=false;show('#pl',1);sl();
+function play(i){const v=D.folders[fi].videos[i];if(locked||v.bad)return;audio();const vs=vstat();if(!vs.ok){tuShow(vs,false);return}Q=D.folders[fi].videos;qi=i;view='play';paused=false;show('#pl',1);sl();hint();
  if(P)P.loadVideoById(Q[qi].id);else if(window.YT&&YT.Player)mk();else{const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}}
 function mk(){P=new YT.Player('player',{width:'100%',height:'100%',videoId:Q[qi].id,playerVars:{autoplay:1,controls:0,rel:0,disablekb:1,fs:0,iv_load_policy:3,playsinline:1},
  events:{onReady:e=>e.target.playVideo(),onStateChange:e=>{if(e.data===0)nx(1);if(e.data===1&&BAD.includes(Q[qi].id)){BAD=BAD.filter(x=>x!==Q[qi].id);localStorage.setItem('bad',JSON.stringify(BAD))}},
  onError:()=>{if(!BAD.includes(Q[qi].id)){BAD.push(Q[qi].id);localStorage.setItem('bad',JSON.stringify(BAD))}nx(1)}}})}
 function onYouTubeIframeAPIReady(){if(view==='play')mk()}
 function nx(d){if(Q.every(isBad)){back();return}for(let k=0;k<Q.length;k++){qi=(qi+d+Q.length)%Q.length;if(!isBad(Q[qi]))break}P.loadVideoById(Q[qi].id);sl()}
-function stop(){if(P&&P.stopVideo)P.stopVideo();show('#pl',0)}
+let hT=null;function hint(){const h=$('#hint');h.textContent='◀ ▶ ganti video  ·  OK jeda  ·  ▲ kembali';h.style.display='block';clearTimeout(hT);hT=setTimeout(()=>h.style.display='none',6000)}
+function stop(){if(P&&P.stopVideo)P.stopVideo();show('#pl',0);$('#hint').style.display='none'}
 function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view='videos'}else if(view==='videos')view='folders';else if(view==='stars')view='folders';else return;draw()}
 
 document.addEventListener('keydown',e=>{const k=e.key;audio();if(locked){e.preventDefault();return}
- if(tu){e.preventDefault();if(k==='Enter'||k===' '||k==='Escape'||k==='Backspace'||k==='BrowserBack'||e.keyCode===4)dismissTU();return}
- if(k==='Escape'||k==='Backspace'||k==='BrowserBack'||e.keyCode===4){e.preventDefault();back();return}
- if(view==='play'){if(k==='ArrowRight')nx(1);else if(k==='ArrowLeft')nx(-1);else if(k==='Enter'||k===' '){paused=!paused;paused?P.pauseVideo():P.playVideo()}e.preventDefault();return}
+ if(tu){e.preventDefault();if(k==='Enter'||k===' '||k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4)dismissTU();return}
+ if(k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4){e.preventDefault();back();return}
+ if(view==='play'){if(k==='ArrowRight')nx(1);else if(k==='ArrowLeft')nx(-1);else if(k==='ArrowUp')back();else if(k==='ArrowDown')hint();else if(k==='Enter'||k===' '){paused=!paused;paused?P.pauseVideo():P.playVideo()}e.preventDefault();return}
  if(k.startsWith('Arrow')){e.preventDefault();nav(k)}});
 function nav(k){const c=[...document.querySelectorAll('.c')],a=document.activeElement,r=a.getBoundingClientRect();let b=null,bd=1e9;
  c.forEach(e=>{if(e===a)return;const q=e.getBoundingClientRect(),dx=q.left-r.left,dy=q.top-r.top;let p,s;
@@ -222,10 +225,10 @@ function panel(k,t){const ac=acts(k.id),s=scOf(k.id,t),tot=dayTot(k.id,t),wt=wee
 ${rw?`<div class="rw${done?' dn':''}"><div class="bar"><i style="width:${pct}%"></i><span class="walk" style="left:${pct}%">🏃</span><span class="gl">${esc(rw.icon||'🎁')}</span></div><div class="rt">${done?(cl?'✓ Hadiah sudah diterima: ':'🎉 Hadiah tercapai! ')+esc(rw.title):esc(rw.title)+' · '+wt+'/'+rw.target+' ⭐'}</div></div>`:''}
 <div class="wk">${wk}</div>${pr?`<div class="pr">💬 ${esc(pr)}</div>`:''}</div>`}
 
-function drawStars(){const a=$('#app'),ks=kidsOn(),t=ds(new Date());try{document.activeElement.blur()}catch(e){}
+function drawStars(){const a=$('#app'),ks=kidsOn(),t=ds(new Date());
  a.innerHTML='<div class="sv">'+Array.from({length:12},(_,i)=>`<span class="st" style="left:${(i*29+6)%94}%;top:${(i*47+8)%86}%;animation-delay:${(i%6)*.35}s">${i%3?'✨':'⭐'}</span>`).join('')+
- `<div class="stt">⭐ Bintang Hebat ⭐</div><div class="kg k${Math.min(ks.length,3)}">`+(ks.length?ks.map(k=>panel(k,t)).join(''):'<p>Belum ada anak. Tambahkan lewat halaman Admin.</p>')+'</div><div class="hint">Tekan Back untuk kembali</div></div>';
- a.querySelectorAll('.cnt').forEach(el=>{const n=+el.dataset.n;let i=0;const f=()=>{el.textContent=i;if(i<n){i++;setTimeout(f,Math.max(40,600/n))}};f()})}
+ `<button class="c b" data-back>‹ Kembali</button><div class="stt">⭐ Bintang Hebat ⭐</div><div class="kg k${Math.min(ks.length,3)}">`+(ks.length?ks.map(k=>panel(k,t)).join(''):'<p>Belum ada anak. Tambahkan lewat halaman Admin.</p>')+'</div><div class="hint">Pilih ‹ Kembali lalu tekan OK</div></div>';
+ a.querySelectorAll('.cnt').forEach(el=>{const n=+el.dataset.n;let i=0;const f=()=>{el.textContent=i;if(i<n){i++;setTimeout(f,Math.max(40,600/n))}};f()});const fb=a.querySelector('.c');if(fb)fb.focus()}
 
 function confetti(n){const o=$('#cf');o.innerHTML='';const em=['⭐','✨','🎉','🌟','💛'];for(let i=0;i<n;i++){const s=document.createElement('span');s.textContent=em[i%5];s.style.cssText=`left:${Math.random()*100}%;font-size:${3+Math.random()*4}vh;animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*1.2}s`;o.appendChild(s)}}
 function fan(){if(!actx)return;const t=actx.currentTime;[523,659,784,1047,1319].forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),s=t+i*.14;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.3,s);g.gain.exponentialRampToValueAtTime(.001,s+.4);o.connect(g);g.connect(actx.destination);o.start(s);o.stop(s+.45)})}
@@ -236,6 +239,6 @@ function cele(e){if(locked)return;const k=ls(A.kids).find(x=>x.id===e.kid);if(!k
  o.style.display='flex';confetti(70);fan();setTimeout(()=>say(e.text),900);setTimeout(()=>{o.style.display='none';$('#cf').innerHTML=''},7500)}
 /* BH-END */
 hadKids=ls(A.kids).length>0;if(FB_ON){pull();conn();setInterval(pull,30000)}
-history.pushState(null,'');addEventListener('popstate',()=>{history.pushState(null,'');back()});
+for(let i=0;i<5;i++)history.pushState(null,'');addEventListener('popstate',()=>{history.pushState(null,'');back()});
 load();
 </script></body></html>
