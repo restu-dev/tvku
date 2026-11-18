@@ -91,10 +91,14 @@ h1{font-size:4.2vh;margin:0 0 3vh;font-weight:700}
 .ch{flex:1;max-width:28vw;min-height:30vh;display:flex;align-items:center;justify-content:center;background:var(--cc);border-radius:4vh;font-size:19vh;font-weight:700;padding:0;text-align:center}
 .ch .gg{line-height:1.1}.ch.no{opacity:.25;filter:grayscale(1);transform:scale(.9)}
 .ch.hl{border-color:#ffd23f;animation:hp .6s infinite alternate}@keyframes hp{to{transform:scale(1.08)}}
+#mw{position:fixed;right:3vw;top:14vh;width:calc(max(22vh,200px) + 2vh);z-index:6;display:none;background:#000a;border-radius:2vh;padding:1vh;text-align:center}
+#mwp,#mp{width:max(22vh,200px);height:max(22vh,200px)}#mp iframe{width:100%;height:100%;border-radius:1.2vh}
+#mt{font-size:2.2vh;margin-top:.8vh;line-height:1.25;max-height:7vh;overflow:hidden}
+.sv.mu{padding-right:max(27vh,230px)}.sv.mu .kg{zoom:.82}
 </style></head><body>
 <div id="app"></div>
 <div id="pl"><div id="player"></div><div id="sh"></div></div>
-<div id="note"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div><div id="hint"></div>
+<div id="note"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div><div id="hint"></div><div id="mw"><div id="mwp"><div id="mp"></div></div><div id="mt">🎧 Murotal</div></div>
 <div id="lk"></div>
 <script src="firebase-config.js"></script>
 <script>
@@ -159,7 +163,7 @@ setInterval(()=>{if(view==='play'&&!paused&&D.settings.mode==='duration'&&lim())
  else tm.style.display='none'},1000);
 setInterval(load,20000);
 
-function draw(){const a=$('#app');if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='murotal'){drawMur();return}if(view==='game'){drawGame();return}
+function draw(){const a=$('#app');if(view!=='stars')mwOff();if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='game'){drawGame();return}
  if(view==='welcome'){const c=D.child||{};if(!c.name&&!c.photo){view='folders';return draw()}
   a.innerHTML=`<div class="wl">${c.photo?`<img class="ph" src="${c.photo}" alt="">`:''}<h1>Halo${c.name?', '+esc(c.name):''}!</h1><button class="c b" data-go>▶ Mulai</button></div>`}
  else if(view==='folders'){const L=J('last',null);let rs='';
@@ -173,8 +177,7 @@ $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const 
  else if(d.r){const[x,y]=d.r.split('.');fi=+x;play(+y)}
  else if(d.s!==undefined){view='stars';draw()}
  else if(d.pg!==undefined){view='games';draw()}
- else if(d.mu!==undefined){view='murotal';draw()}
- else if(d.mv!==undefined)playMur(+d.mv)
+ else if(d.mt!==undefined){mwPaused=!mwPaused;mwPaused?mwHold():mwRes();drawStars()}
  else if(d.gm!==undefined)startGame(d.gm)
  else if(d.ch!==undefined)answer(+d.ch)
  else if(d.rp!==undefined){if(G)say(G.q.say)}
@@ -184,14 +187,14 @@ $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const 
 function sl(){if(mur)return;localStorage.setItem('last',JSON.stringify({f:fi,id:Q[qi].id}))}
 function play(i){const v=D.folders[fi].videos[i];if(locked||v.bad)return;audio();const vs=vstat();if(!vs.ok){tuShow(vs,false);return}mur=false;Q=D.folders[fi].videos;qi=i;view='play';paused=false;show('#pl',1);sl();hint();
  go()}
-function go(){if(P)P.loadVideoById(Q[qi].id);else if(window.YT&&YT.Player)mk();else{const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}}
+function go(){if(P)P.loadVideoById(Q[qi].id);else if(ytLoad())mk()}
 function mk(){P=new YT.Player('player',{width:'100%',height:'100%',videoId:Q[qi].id,playerVars:{autoplay:1,controls:0,rel:0,disablekb:1,fs:0,iv_load_policy:3,playsinline:1},
  events:{onReady:e=>e.target.playVideo(),onStateChange:e=>{if(e.data===0)nx(1);if(e.data===1&&BAD.includes(Q[qi].id)){BAD=BAD.filter(x=>x!==Q[qi].id);localStorage.setItem('bad',JSON.stringify(BAD))}},
  onError:()=>{if(!BAD.includes(Q[qi].id)){BAD.push(Q[qi].id);localStorage.setItem('bad',JSON.stringify(BAD))}nx(1)}}})}
-function onYouTubeIframeAPIReady(){if(view==='play')mk()}
+function onYouTubeIframeAPIReady(){if(view==='play')mk();if(mwWant)mkM()}
 function nx(d){if(Q.every(isBad)){back();return}for(let k=0;k<Q.length;k++){qi=(qi+d+Q.length)%Q.length;if(!isBad(Q[qi]))break}P.loadVideoById(Q[qi].id);sl()}
 let hT=null;function hint(){const h=$('#hint');h.textContent='OK jeda  ·  ▲ kembali';h.style.display='block';clearTimeout(hT);hT=setTimeout(()=>h.style.display='none',6000)}
-function stop(){if(P&&P.stopVideo)P.stopVideo();show('#pl',0);$('#hint').style.display='none'}
+function stop(){if(P&&P.stopVideo)P.stopVideo();show('#pl',0);mwOff();$('#hint').style.display='none'}
 function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view=mur?'murotal':'videos';mur=false}else if(view==='murotal')view='stars';else if(view==='videos')view='folders';else if(view==='stars')view='folders';else if(view==='game'){exitGame();view='games'}else if(view==='games')view='folders';else return;draw()}
 
 document.addEventListener('keydown',e=>{const k=e.key;audio();if(locked){e.preventDefault();return}
@@ -247,27 +250,36 @@ ${rw?`<div class="rw${done?' dn':''}"><div class="bar"><i style="width:${pct}%">
 <div class="wk">${wk}</div>${pr?`<div class="pr">💬 ${esc(pr)}</div>`:''}</div>`}
 
 function drawStars(){const a=$('#app'),ks=kidsOn(),t=ds(new Date());
- a.innerHTML='<div class="sv">'+Array.from({length:12},(_,i)=>`<span class="st" style="left:${(i*29+6)%94}%;top:${(i*47+8)%86}%;animation-delay:${(i%6)*.35}s">${i%3?'✨':'⭐'}</span>`).join('')+
- `<button class="c b" data-back>‹ Kembali</button>${murList().length?'<button class="c b" data-mu>🎧 Murotal</button>':''}<div class="stt">⭐ Bintang Hebat ⭐</div><div class="kg k${Math.min(ks.length,3)}">`+(ks.length?ks.map(k=>panel(k,t)).join(''):'<p>Belum ada anak. Tambahkan lewat halaman Admin.</p>')+'</div><div class="hint">Pilih ‹ Kembali lalu tekan OK</div></div>';
- a.querySelectorAll('.cnt').forEach(el=>{const n=+el.dataset.n;let i=0;const f=()=>{el.textContent=i;if(i<n){i++;setTimeout(f,Math.max(40,600/n))}};f()});const fb=a.querySelector('.c');if(fb)fb.focus()}
+ a.innerHTML='<div class="sv'+(murList().length?' mu':'')+'">'+Array.from({length:12},(_,i)=>`<span class="st" style="left:${(i*29+6)%94}%;top:${(i*47+8)%86}%;animation-delay:${(i%6)*.35}s">${i%3?'✨':'⭐'}</span>`).join('')+
+ `<button class="c b" data-back>‹ Kembali</button>${murList().length?`<button class="c b" data-mt>${mwPaused?'▶':'⏸'} Murotal</button>`:''}<div class="stt">⭐ Bintang Hebat ⭐</div><div class="kg k${Math.min(ks.length,3)}">`+(ks.length?ks.map(k=>panel(k,t)).join(''):'<p>Belum ada anak. Tambahkan lewat halaman Admin.</p>')+'</div><div class="hint">Pilih ‹ Kembali lalu tekan OK</div></div>';
+ a.querySelectorAll('.cnt').forEach(el=>{const n=+el.dataset.n;let i=0;const f=()=>{el.textContent=i;if(i<n){i++;setTimeout(f,Math.max(40,600/n))}};f()});const fb=a.querySelector('.c');if(fb)fb.focus();mwOn()}
 
 function confetti(n){const o=$('#cf');o.innerHTML='';const em=['⭐','✨','🎉','🌟','💛'];for(let i=0;i<n;i++){const s=document.createElement('span');s.textContent=em[i%5];s.style.cssText=`left:${Math.random()*100}%;font-size:${3+Math.random()*4}vh;animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*1.2}s`;o.appendChild(s)}}
 function fan(){if(!actx)return;const t=actx.currentTime;[523,659,784,1047,1319].forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),s=t+i*.14;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.3,s);g.gain.exponentialRampToValueAtTime(.001,s+.4);o.connect(g);g.connect(actx.destination);o.start(s);o.stop(s+.45)})}
 function cele(e){if(locked)return;const k=ls(A.kids).find(x=>x.id===e.kid);if(!k)return;
  if(view==='play'){const n=$('#note');n.textContent='⭐ '+(e.text||'Hebat!');n.style.display='block';fan();setTimeout(()=>n.style.display='none',6000);return}
- const ph=PH[k.id]&&PH[k.id].src,o=$('#ce');
+ const ph=PH[k.id]&&PH[k.id].src,o=$('#ce');celeN++;mwHold();
  o.innerHTML=`<div class="cb">${ph?`<img class="pf big2" src="${ph}" alt="">`:''}<div class="bigst">${e.stars?'⭐'.repeat(Math.min(e.stars,3)):'💌'}</div><div class="ct">${esc(e.text||'Hebat!')}</div></div>`;
- o.style.display='flex';confetti(70);fan();setTimeout(()=>say(e.text),900);setTimeout(()=>{o.style.display='none';$('#cf').innerHTML=''},7500)}
+ o.style.display='flex';confetti(70);fan();setTimeout(()=>say(e.text),900);setTimeout(()=>{o.style.display='none';$('#cf').innerHTML='';celeN=Math.max(0,celeN-1);if(!celeN)mwRes()},7500)}
 /* BH-END */
 
 
-/* MUR-START: Murotal Al-Qur'an (link YouTube dari admin) */
+/* MUR-START: Murotal latar di layar Bintang Hebat */
 const murList=()=>ls(A.murotal).filter(x=>x.vid).map(x=>({id:x.vid,title:x.title||'Murotal'}));
-function drawMur(){const L=murList();$('#app').innerHTML='<button class="c b" data-back>‹ Kembali</button><h1>🎧 Murotal Al-Qur\'an</h1>'+(A.murotalLimit?vb():'')+'<div class="g">'+
- (L.length?L.map((v,i)=>`<button class="c v" data-mv="${i}"><img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt=""><span>${esc(v.title)}</span>${BAD.includes(v.id)?'<em>⚠ Tidak bisa diputar</em>':''}</button>`).join(''):'<p>Belum ada murotal. Tambahkan lewat halaman Admin.</p>')+'</div>';
- const f=document.querySelector('#app .c');if(f)f.focus()}
-function playMur(i){const L=murList();if(locked||!L[i])return;audio();const vs=vstat();if(A.murotalLimit&&!vs.ok){tuShow(vs,false);return}
- mur=true;Q=L;qi=i;view='play';paused=false;show('#pl',1);hint();go()}
+let PM=null,mwKey='',mwPaused=false,mwWant=false,celeN=0,ytS=false;
+function ytLoad(){if(window.YT&&YT.Player)return true;if(!ytS){ytS=true;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}return false}
+function mkM(){const L=murList();mwWant=false;if(PM||!L.length||!(window.YT&&YT.Player))return;
+ PM=new YT.Player('mp',{width:'100%',height:'100%',videoId:L[0].id,playerVars:{autoplay:1,controls:0,disablekb:1,rel:0,fs:0,playsinline:1,iv_load_policy:3,loop:1,playlist:L.map(x=>x.id).join(',')},
+  events:{onReady:e=>{if(!mwPaused&&!celeN&&view==='stars')e.target.playVideo()},onStateChange:e=>{if(e.data===1){try{$('#mt').textContent='🎧 '+(PM.getVideoData().title||'Murotal')}catch(x){}}},onError:()=>{try{PM.nextVideo()}catch(x){}}}})}
+function mwOn(){const L=murList();if(view!=='stars'||!L.length){mwOff();return}
+ $('#mw').style.display='block';const key=L.map(x=>x.id).join();
+ if(PM&&mwKey!==key){try{PM.destroy()}catch(e){}PM=null;$('#mwp').innerHTML='<div id="mp"></div>'}
+ mwKey=key;
+ if(!PM){if(ytLoad())mkM();else mwWant=true}
+ else if(!mwPaused&&!celeN){try{const s=PM.getPlayerState();if(s!==1&&s!==3)PM.playVideo()}catch(e){}}}
+function mwOff(){const w=$('#mw');if(w)w.style.display='none';try{if(PM&&PM.pauseVideo)PM.pauseVideo()}catch(e){}}
+function mwHold(){try{if(PM&&PM.pauseVideo)PM.pauseVideo()}catch(e){}}
+function mwRes(){if(view==='stars'&&!mwPaused&&!locked&&!celeN){try{if(PM&&PM.playVideo)PM.playVideo()}catch(e){}}}
 /* MUR-END */
 /* GAME-START: Permainan belajar */
 const CATS=[{id:'abjad',t:'Abjad',i:'🔤',bg:'linear-gradient(135deg,#1d4ed8,#38bdf8)'},{id:'angka',t:'Angka',i:'🔢',bg:'linear-gradient(135deg,#c2410c,#fbbf24)'},{id:'hij',t:'Huruf Hijaiyah',i:'🕌',bg:'linear-gradient(135deg,#065f46,#34d399)'}];
