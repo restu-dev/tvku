@@ -89,7 +89,7 @@ h1{font-size:4.2vh;margin:0 0 3vh;font-weight:700}
 .cnt2{max-width:85vw;text-align:center;line-height:1.15}
 .chs{display:flex;gap:3vw;justify-content:center;margin:1vh 0 3vh;width:100%}
 .ch{flex:1;max-width:28vw;min-height:30vh;display:flex;align-items:center;justify-content:center;background:var(--cc);border-radius:4vh;font-size:19vh;font-weight:700;padding:0;text-align:center}
-.ch .gl{line-height:1.1}.ch.no{opacity:.25;filter:grayscale(1);transform:scale(.9)}
+.ch .gg{line-height:1.1}.ch.no{opacity:.25;filter:grayscale(1);transform:scale(.9)}
 .ch.hl{border-color:#ffd23f;animation:hp .6s infinite alternate}@keyframes hp{to{transform:scale(1.08)}}
 </style></head><body>
 <div id="app"></div>
@@ -153,7 +153,7 @@ setInterval(()=>{if(view==='play'&&!paused&&D.settings.mode==='duration'){U.sec=
  const vs=vstat(),tm=$('#tm');
  if(!vs.ok&&view==='play'){view='videos';draw();tuShow(vs,true);return}
  if(vs.ok!==vPrev){vPrev=vs.ok;if(view==='videos')draw()}
- if(vs.ok&&vs.left!==null&&!tu){tm.textContent='⏳ '+fmt(vs.left);tm.style.display='block';
+ if(vs.ok&&vs.left!==null&&!tu&&view!=='game'){tm.textContent='⏳ '+fmt(vs.left);tm.style.display='block';
   WARN.forEach(m=>{if(vs.left>m*60)fired[m]=0;else if(!fired[m]){fired[m]=1;if(vs.left>m*60-20&&view==='play')warn(m)}})}
  else tm.style.display='none'},1000);
 setInterval(load,20000);
@@ -269,7 +269,7 @@ let G=null;
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const others=(pool,n,bad)=>shuf(pool.filter(x=>!bad(x))).slice(0,n);
-const lcard=x=>({h:`<span class="gl">${x}${x.toLowerCase()}</span>`}),ncard=x=>({h:`<span class="gl">${x}</span>`});
+const lcard=x=>({h:`<span class="gg">${x}${x.toLowerCase()}</span>`}),ncard=x=>({h:`<span class="gg">${x}</span>`});
 function items(){const g=A.game||{},c=ls(g.items).map(x=>{const p=PH['g_'+x.id];return{L:(x.word||'').trim().charAt(0).toUpperCase(),word:x.word,pic:p&&p.src?`<img src="${p.src}" alt="">`:(x.emoji?esc(x.emoji):'')}}).filter(x=>/^[A-Z]$/.test(x.L)&&x.pic);
  return(g.useDefault===false?[]:WORDS.map(w=>({L:w[0],word:w[1],pic:w[2]}))).concat(c)}
 function gen(id){
@@ -277,7 +277,7 @@ function gen(id){
  if(id==='abjad1'){const L=rnd(LET),o=others(LET,2,x=>x===L);return{key:L,say:'Mana huruf '+AN[L]+'?',good:'Itu huruf '+AN[L]+'.',ch:[L,...o].map((x,i)=>({ok:i===0,...lcard(x)}))}}
  if(id==='angka1'){const n=rnd(N10),ob=rnd(OBJ),o=others(N10,2,x=>x===n);return{key:n+ob[0],count:n,emoji:ob[0],say:'Ada berapa '+ob[1]+'?',good:'Ada '+NUMW[n]+' '+ob[1]+'.',ch:[n,...o].map((x,i)=>({ok:i===0,...ncard(x)}))}}
  if(id==='angka2'){const n=rnd(N10),o=others(N10,2,x=>x===n);return{key:'n'+n,say:'Mana angka '+NUMW[n]+'?',good:'Itu angka '+NUMW[n]+'.',ch:[n,...o].map((x,i)=>({ok:i===0,...ncard(x)}))}}
- const a=rnd(HJ),o=others(HJ,2,x=>x[1]===a[1]);return{key:a[1],say:'Mana huruf '+a[1]+'?',good:'Itu huruf '+a[1]+'.',ch:[a,...o].map((x,i)=>({ok:i===0,h:`<span class="gl ar">${x[0]}</span>`}))}}
+ const a=rnd(HJ),o=others(HJ,2,x=>x[1]===a[1]);return{key:a[1],say:'Mana huruf '+a[1]+'?',good:'Itu huruf '+a[1]+'.',ch:[a,...o].map((x,i)=>({ok:i===0,h:`<span class="gg ar">${x[0]}</span>`}))}}
 function mkQ(id){let q;for(let t=0;t<6;t++){q=gen(id);if(!G||G.lastKey!==q.key)break}if(G)G.lastKey=q.key;q.ch=shuf(q.ch);return q}
 
 function gameCard(){return '<button class="c f" style="--bg:linear-gradient(135deg,#3a86ff,#8338ec)" data-pg><i>🎮</i>Permainan<small>Abjad · Angka · Hijaiyah</small></button>'}

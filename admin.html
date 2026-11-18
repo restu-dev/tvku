@@ -1,232 +1,607 @@
 <!DOCTYPE html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin TV Anak</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#f3f1fa;color:#1b1740;font:16px/1.4 "Trebuchet MS","Segoe UI",sans-serif}
-main{max-width:1100px;margin:0 auto;padding:16px 14px 110px}h1{font-size:24px;margin:6px 0 14px}h2{font-size:18px;margin:0 0 10px}
-section{background:#fff;border-radius:14px;padding:14px;margin:0 0 14px;box-shadow:0 1px 4px #1b174022}
-input,select{font:inherit;font-size:16px;padding:9px 10px;border:1px solid #b9b3d6;border-radius:8px;max-width:100%;min-height:42px}
-textarea{font:inherit;font-size:16px;padding:9px 10px;border:1px solid #b9b3d6;border-radius:8px;width:100%}
-.lkb{width:100%;padding:16px;font-size:18px;font-weight:700}.lkb.on{background:#b3261e}.lkb.off{background:#0b6e4f}.chip{background:#e3dffa;color:#1b1740;padding:6px 10px;min-height:36px;font-size:14px}
-button{font:inherit;padding:9px 14px;min-height:42px;border:0;border-radius:8px;background:#3a3290;color:#fff;cursor:pointer}
-button.x{background:#b3261e;padding:6px 10px;min-height:38px}button.s{background:#e3dffa;color:#1b1740}button.m{background:#e3dffa;color:#1b1740;padding:6px 10px;min-height:38px}
-.r{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.r .w{flex:1;min-width:140px}
-.fo{border:1px solid #ddd8f0;border-radius:12px;padding:10px;margin:0 0 12px}
-.fh{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.fh input.w{flex:1;min-width:130px}
-.v{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #eee}.v span{flex:1;min-width:0;overflow-wrap:anywhere}.v div{display:flex;gap:4px;flex-shrink:0}
-.sw{width:34px;height:34px;min-height:0;padding:0;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #aaa}.sw.on{box-shadow:0 0 0 3px #1b1740}
-.av{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #ffd23f}
-#bar{position:fixed;left:0;right:0;bottom:0;background:#1b1740;color:#fff;padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
-#bar button{background:#ffd23f;color:#1b1740;font-weight:700}#bar button.s{background:#e3dffa;font-weight:400}small{color:#6a6590}
-#login{max-width:420px;margin:8vh auto}
-@media(min-width:900px){.cols{display:grid;grid-template-columns:1.7fr 1fr;gap:16px;align-items:start}}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}.tb{background:#e3dffa;color:#1b1740}.tb.on{background:#3a3290;color:#fff}
-.sb{background:#fff3c4;color:#b58900;font-size:22px;padding:4px 10px;min-height:44px}.sb.on{background:#ffd23f}
-.avt{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#e3dffa;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
-.chk{display:inline-flex;gap:4px;align-items:center;margin-right:10px}
-</style></head><body><main>
-<div id="login"><h1>Admin TV Anak</h1><section><h2>Masuk</h2><div class="r"><input class="w" id="pw" type="password" placeholder="Password"><button id="go">Masuk</button></div><small id="le"></small></section></div>
-<div id="adm" hidden><h1>Admin TV Anak</h1>
-<div class="tabs"><button class="tb on" id="t1">📺 Video &amp; Waktu</button><button class="tb" id="t2">⭐ Penilaian</button></div>
-<div id="pv1"><div class="cols">
-<div><section><h2>Folder video</h2>
-<div class="r"><input class="w" id="fn" placeholder="Nama folder baru"><button id="fa">Buat folder</button><button class="s" id="ck">Periksa semua video</button></div>
-<div id="fl"></div></section></div>
-<div>
-<section><h2>Kunci TV</h2>
-<button id="lkb" class="lkb off"></button>
-<div class="r"><textarea id="lkm" rows="3" placeholder="Pesan di layar TV, misalnya: Waktunya makan siang"></textarea></div>
-<div class="r" id="chips"></div>
-<div class="r"><label><input type="checkbox" id="lks"> Bacakan pesan dengan suara di TV</label><button class="s" id="lkt">🔊 Uji suara</button></div>
-<small id="lkn"></small></section>
-<section><h2>Batas waktu menonton</h2>
-<div class="r"><select id="mode" class="w"><option value="off">Tanpa batas</option><option value="window">Jadwal: mulai jam tertentu</option><option value="duration">Lama saja (total per hari)</option></select></div>
-<div class="r"><label>Mulai jam<br><input id="start" type="time"></label><label>Lama (menit)<br><input id="min" type="number" min="1" style="width:100px"></label></div>
-<small>Batas waktu hanya berlaku untuk memutar video. Folder dan Bintang Hebat tetap bisa dibuka. Jadwal: video bisa diputar dari jam mulai selama lama yang dipilih. Lama saja: dihitung saat video diputar, reset tiap hari. Peringatan berbunyi di sisa 10, 5, dan 1 menit, lalu alarm saat habis.</small>
-<div class="r"><button class="s" id="rst">Reset waktu hari ini</button></div></section>
-<section><h2>Layar sambutan</h2><div class="r"><img id="pv" class="av" alt="" hidden><div class="w"><input id="cn" placeholder="Nama anak" style="width:100%"></div></div>
-<div class="r"><input id="cf" type="file" accept="image/*"><button class="s" id="cr">Hapus foto</button></div><small>Foto dipotong persegi dan dikecilkan otomatis. Kosongkan nama dan foto untuk melewati layar sambutan.</small></section>
-<section><h2>Koneksi GitHub</h2><small>Agar tombol Simpan langsung memperbarui data. Token hanya disimpan di perangkat ini.</small>
-<div class="r"><input class="w" id="go_o" placeholder="Username"><input class="w" id="go_r" placeholder="Repository"><input id="go_b" placeholder="Branch" value="main" style="width:90px"></div>
-<div class="r"><input class="w" id="go_t" type="password" placeholder="Token GitHub (Contents: read &amp; write)"></div></section>
-<section><h2>Ganti password</h2><div class="r"><input class="w" id="np" type="password" placeholder="Password baru"><button id="npb" class="s">Ganti</button></div></section>
-</div></div></div><div id="pv2" hidden>
-<div id="fbno" hidden><section><h2>Firebase belum diatur</h2><p>Isi file <b>firebase-config.js</b> dengan konfigurasi proyek Firebase Anda, lalu muat ulang halaman ini. Langkahnya ada di <b>PANDUAN-FIREBASE.md</b>.</p></section></div>
-<div id="fbin" hidden><section><h2>Masuk ke Firebase</h2><div class="r"><input class="w" id="fe" type="email" placeholder="Email admin"><input class="w" id="fp" type="password" placeholder="Password"><button id="fgo">Masuk</button></div><small id="fer"></small></section></div>
-<div id="fbon" hidden>
-<div class="tabs"><button class="tb on" data-s="td">Hari ini</button><button class="tb" data-s="tk">Anak</button><button class="tb" data-s="ta">Kegiatan</button><button class="tb" data-s="tr">Hadiah</button><button class="tb" data-s="th">Riwayat</button><button class="tb" data-s="tg">Permainan</button><button class="s" id="fout">Keluar</button></div>
-<section id="td"></section><section id="tk" hidden></section><section id="ta" hidden></section><section id="tr" hidden></section><section id="th" hidden></section><section id="tg" hidden></section>
-</div></div></div></main>
-<div id="bar" hidden><span id="msg">Belum ada perubahan.</span><span><button class="s" id="cp">Salin JSON</button> <button id="sv">Simpan ke GitHub</button></span></div>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script>
-let D,$=s=>document.getElementById(s);
-const ICONS=['📁','🎵','📚','🔤','🔢','🐶','🚗','🎨','🌈','🧸','⚽','🍎'],COLORS=['#2a2466','#b3261e','#0b6e4f','#c2410c','#7b2cbf','#0369a1','#a21caf','#4d7c0f'];
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const hash=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join('');
-const cfg=()=>({o:$('go_o').value.trim(),r:$('go_r').value.trim(),b:$('go_b').value.trim()||'main',t:$('go_t').value.trim()});
-const msg=t=>$('msg').textContent=t,dirty=()=>msg('Ada perubahan, belum disimpan.');
-const gh=g=>({url:`https://api.github.com/repos/${g.o}/${g.r}/contents/data.json`,h:{Authorization:'Bearer '+g.t,Accept:'application/vnd.github+json'}});
-const ytid=v=>{const m=v.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/)||v.match(/^([\w-]{11})$/);return m&&m[1]};
-const oe=id=>fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id));
-function mv(a,i,d){const k=i+d;if(k<0||k>=a.length)return;[a[i],a[k]]=[a[k],a[i]]}
-function norm(){D.settings=Object.assign({mode:'off',start:'15:00',minutes:60,reset:0},D.settings);D.child=Object.assign({name:'',photo:''},D.child);D.lock=Object.assign({on:false,msg:'',speak:true},D.lock);D.folders.forEach(f=>{f.icon=f.icon||ICONS[0];f.color=f.color||COLORS[0]})}
+<html lang="id">
 
-(function(){const c=JSON.parse(localStorage.getItem('gh')||'{}');$('go_o').value=c.o||location.hostname.split('.')[0]||'';$('go_r').value=c.r||location.pathname.split('/')[1]||'';$('go_b').value=c.b||'main';$('go_t').value=c.t||''})();
-['go_o','go_r','go_b','go_t'].forEach(i=>$(i).onchange=()=>localStorage.setItem('gh',JSON.stringify(cfg())));
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin TV Anak</title>
+  <style>
+    * {
+      box-sizing: border-box
+    }
 
-async function fetchData(){const g=cfg();if(g.o&&g.r&&g.t){try{const a=gh(g),r=await fetch(a.url+'?ref='+g.b+'&_='+Date.now(),{headers:{...a.h,Accept:'application/vnd.github.raw+json'},cache:'no-store'});if(r.ok)return await r.json()}catch(e){}}
- return await (await fetch('data.json?'+Date.now())).json()}
-async function enter(){D=await fetchData();norm();$('login').hidden=true;$('adm').hidden=false;$('bar').hidden=false;sessionStorage.setItem('ok','1');ui();if(FBOK)fbStart()}
-$('go').onclick=async()=>{try{const d=await (await fetch('data.json?'+Date.now())).json();if(await hash($('pw').value)===d.pass)await enter();else $('le').textContent='Password salah.'}catch(e){$('le').textContent='Gagal memuat data.'}};
-$('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
-if(sessionStorage.getItem('ok'))enter();
+    body {
+      margin: 0;
+      background: #f3f1fa;
+      color: #1b1740;
+      font: 16px/1.4 "Trebuchet MS", "Segoe UI", sans-serif
+    }
 
-function ui(){const s=D.settings,c=D.child;lkUI();$('mode').value=s.mode;$('start').value=s.start;$('min').value=s.minutes;$('cn').value=c.name;$('pv').hidden=!c.photo;if(c.photo)$('pv').src=c.photo;
- $('fl').innerHTML=D.folders.map((f,i)=>`<div class="fo"><div class="fh"><select data-ic="${i}">${ICONS.map(x=>`<option${x===f.icon?' selected':''}>${x}</option>`).join('')}</select><input class="w" data-n="${i}" value="${esc(f.name)}">
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 14px 110px
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 6px 0 14px
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 10px
+    }
+
+    section {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px;
+      margin: 0 0 14px;
+      box-shadow: 0 1px 4px #1b174022
+    }
+
+    input,
+    select {
+      font: inherit;
+      font-size: 16px;
+      padding: 9px 10px;
+      border: 1px solid #b9b3d6;
+      border-radius: 8px;
+      max-width: 100%;
+      min-height: 42px
+    }
+
+    textarea {
+      font: inherit;
+      font-size: 16px;
+      padding: 9px 10px;
+      border: 1px solid #b9b3d6;
+      border-radius: 8px;
+      width: 100%
+    }
+
+    .lkb {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 700
+    }
+
+    .lkb.on {
+      background: #b3261e
+    }
+
+    .lkb.off {
+      background: #0b6e4f
+    }
+
+    .chip {
+      background: #e3dffa;
+      color: #1b1740;
+      padding: 6px 10px;
+      min-height: 36px;
+      font-size: 14px
+    }
+
+    button {
+      font: inherit;
+      padding: 9px 14px;
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      background: #3a3290;
+      color: #fff;
+      cursor: pointer
+    }
+
+    button.x {
+      background: #b3261e;
+      padding: 6px 10px;
+      min-height: 38px
+    }
+
+    button.s {
+      background: #e3dffa;
+      color: #1b1740
+    }
+
+    button.m {
+      background: #e3dffa;
+      color: #1b1740;
+      padding: 6px 10px;
+      min-height: 38px
+    }
+
+    .r {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 8px 0
+    }
+
+    .r .w {
+      flex: 1;
+      min-width: 140px
+    }
+
+    .fo {
+      border: 1px solid #ddd8f0;
+      border-radius: 12px;
+      padding: 10px;
+      margin: 0 0 12px
+    }
+
+    .fh {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .fh input.w {
+      flex: 1;
+      min-width: 130px
+    }
+
+    .v {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 0;
+      border-top: 1px solid #eee
+    }
+
+    .v span {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere
+    }
+
+    .v div {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0
+    }
+
+    .sw {
+      width: 34px;
+      height: 34px;
+      min-height: 0;
+      padding: 0;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 1px #aaa
+    }
+
+    .sw.on {
+      box-shadow: 0 0 0 3px #1b1740
+    }
+
+    .av {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ffd23f
+    }
+
+    #bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #1b1740;
+      color: #fff;
+      padding: 10px 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    #bar button {
+      background: #ffd23f;
+      color: #1b1740;
+      font-weight: 700
+    }
+
+    #bar button.s {
+      background: #e3dffa;
+      font-weight: 400
+    }
+
+    small {
+      color: #6a6590
+    }
+
+    #login {
+      max-width: 420px;
+      margin: 8vh auto
+    }
+
+    @media(min-width:900px) {
+      .cols {
+        display: grid;
+        grid-template-columns: 1.7fr 1fr;
+        gap: 16px;
+        align-items: start
+      }
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 0 0 14px
+    }
+
+    .tb {
+      background: #e3dffa;
+      color: #1b1740
+    }
+
+    .tb.on {
+      background: #3a3290;
+      color: #fff
+    }
+
+    .sb {
+      background: #fff3c4;
+      color: #b58900;
+      font-size: 22px;
+      padding: 4px 10px;
+      min-height: 44px
+    }
+
+    .sb.on {
+      background: #ffd23f
+    }
+
+    .avt {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e3dffa;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700
+    }
+
+    .chk {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      margin-right: 10px
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div id="login">
+      <h1>Admin TV Anak</h1>
+      <section>
+        <h2>Masuk</h2>
+        <div class="r"><input class="w" id="pw" type="password" placeholder="Password"><button id="go">Masuk</button>
+        </div><small id="le"></small>
+      </section>
+    </div>
+    <div id="adm" hidden>
+      <h1>Admin TV Anak</h1>
+      <div class="tabs"><button class="tb on" id="t1">📺 Video &amp; Waktu</button><button class="tb" id="t2">⭐
+          Penilaian</button></div>
+      <div id="pv1">
+        <div class="cols">
+          <div>
+            <section>
+              <h2>Folder video</h2>
+              <div class="r"><input class="w" id="fn" placeholder="Nama folder baru"><button id="fa">Buat
+                  folder</button><button class="s" id="ck">Periksa semua video</button></div>
+              <div id="fl"></div>
+            </section>
+          </div>
+          <div>
+            <section>
+              <h2>Kunci TV</h2>
+              <button id="lkb" class="lkb off"></button>
+              <div class="r"><textarea id="lkm" rows="3"
+                  placeholder="Pesan di layar TV, misalnya: Waktunya makan siang"></textarea></div>
+              <div class="r" id="chips"></div>
+              <div class="r"><label><input type="checkbox" id="lks"> Bacakan pesan dengan suara di TV</label><button
+                  class="s" id="lkt">🔊 Uji suara</button></div>
+              <small id="lkn"></small>
+            </section>
+            <section>
+              <h2>Batas waktu menonton</h2>
+              <div class="r"><select id="mode" class="w">
+                  <option value="off">Tanpa batas</option>
+                  <option value="window">Jadwal: mulai jam tertentu</option>
+                  <option value="duration">Lama saja (total per hari)</option>
+                </select></div>
+              <div class="r"><label>Mulai jam<br><input id="start" type="time"></label><label>Lama (menit)<br><input
+                    id="min" type="number" min="1" style="width:100px"></label></div>
+              <small>Batas waktu hanya berlaku untuk memutar video. Folder dan Bintang Hebat tetap bisa dibuka. Jadwal:
+                video bisa diputar dari jam mulai selama lama yang dipilih. Lama saja: dihitung saat video diputar,
+                reset tiap hari. Peringatan berbunyi di sisa 10, 5, dan 1 menit, lalu alarm saat habis.</small>
+              <div class="r"><button class="s" id="rst">Reset waktu hari ini</button></div>
+            </section>
+            <section>
+              <h2>Layar sambutan</h2>
+              <div class="r"><img id="pv" class="av" alt="" hidden>
+                <div class="w"><input id="cn" placeholder="Nama anak" style="width:100%"></div>
+              </div>
+              <div class="r"><input id="cf" type="file" accept="image/*"><button class="s" id="cr">Hapus foto</button>
+              </div><small>Foto dipotong persegi dan dikecilkan otomatis. Kosongkan nama dan foto untuk melewati layar
+                sambutan.</small>
+            </section>
+            <section>
+              <h2>Koneksi GitHub</h2><small>Agar tombol Simpan langsung memperbarui data. Token hanya disimpan di
+                perangkat ini.</small>
+              <div class="r"><input class="w" id="go_o" placeholder="Username"><input class="w" id="go_r"
+                  placeholder="Repository"><input id="go_b" placeholder="Branch" value="main" style="width:90px"></div>
+              <div class="r"><input class="w" id="go_t" type="password"
+                  placeholder="Token GitHub (Contents: read &amp; write)"></div>
+            </section>
+            <section>
+              <h2>Ganti password</h2>
+              <div class="r"><input class="w" id="np" type="password" placeholder="Password baru"><button id="npb"
+                  class="s">Ganti</button></div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <div id="pv2" hidden>
+        <div id="fbno" hidden>
+          <section>
+            <h2>Firebase belum diatur</h2>
+            <p>Isi file <b>firebase-config.js</b> dengan konfigurasi proyek Firebase Anda, lalu muat ulang halaman ini.
+              Langkahnya ada di <b>PANDUAN-FIREBASE.md</b>.</p>
+          </section>
+        </div>
+        <div id="fbin" hidden>
+          <section>
+            <h2>Masuk ke Firebase</h2>
+            <div class="r"><input class="w" id="fe" type="email" placeholder="Email admin"><input class="w" id="fp"
+                type="password" placeholder="Password"><button id="fgo">Masuk</button></div><small id="fer"></small>
+          </section>
+        </div>
+        <div id="fbon" hidden>
+          <div class="tabs"><button class="tb on" data-s="td">Hari ini</button><button class="tb"
+              data-s="tk">Anak</button><button class="tb" data-s="ta">Kegiatan</button><button class="tb"
+              data-s="tr">Hadiah</button><button class="tb" data-s="th">Riwayat</button><button class="tb"
+              data-s="tg">Permainan</button><button class="s" id="fout">Keluar</button></div>
+          <section id="td"></section>
+          <section id="tk" hidden></section>
+          <section id="ta" hidden></section>
+          <section id="tr" hidden></section>
+          <section id="th" hidden></section>
+          <section id="tg" hidden></section>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div id="bar" hidden><span id="msg">Belum ada perubahan.</span><span><button class="s" id="cp">Salin JSON</button>
+      <button id="sv">Simpan ke GitHub</button></span></div>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+    let D, $ = s => document.getElementById(s);
+    const ICONS = ['📁', '🎵', '📚', '🔤', '🔢', '🐶', '🚗', '🎨', '🌈', '🧸', '⚽', '🍎'], COLORS = ['#2a2466', '#b3261e', '#0b6e4f', '#c2410c', '#7b2cbf', '#0369a1', '#a21caf', '#4d7c0f'];
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const hash = async t => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
+    const cfg = () => ({ o: $('go_o').value.trim(), r: $('go_r').value.trim(), b: $('go_b').value.trim() || 'main', t: $('go_t').value.trim() });
+    const msg = t => $('msg').textContent = t, dirty = () => msg('Ada perubahan, belum disimpan.');
+    const gh = g => ({ url: `https://api.github.com/repos/${g.o}/${g.r}/contents/data.json`, h: { Authorization: 'Bearer ' + g.t, Accept: 'application/vnd.github+json' } });
+    const ytid = v => { const m = v.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/) || v.match(/^([\w-]{11})$/); return m && m[1] };
+    const oe = id => fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id));
+    function mv(a, i, d) { const k = i + d; if (k < 0 || k >= a.length) return;[a[i], a[k]] = [a[k], a[i]] }
+    function norm() { D.settings = Object.assign({ mode: 'off', start: '15:00', minutes: 60, reset: 0 }, D.settings); D.child = Object.assign({ name: '', photo: '' }, D.child); D.lock = Object.assign({ on: false, msg: '', speak: true }, D.lock); D.folders.forEach(f => { f.icon = f.icon || ICONS[0]; f.color = f.color || COLORS[0] }) }
+
+    (function () { const c = JSON.parse(localStorage.getItem('gh') || '{}'); $('go_o').value = c.o || location.hostname.split('.')[0] || ''; $('go_r').value = c.r || location.pathname.split('/')[1] || ''; $('go_b').value = c.b || 'main'; $('go_t').value = c.t || '' })();
+    ['go_o', 'go_r', 'go_b', 'go_t'].forEach(i => $(i).onchange = () => localStorage.setItem('gh', JSON.stringify(cfg())));
+
+    async function fetchData() {
+      const g = cfg(); if (g.o && g.r && g.t) { try { const a = gh(g), r = await fetch(a.url + '?ref=' + g.b + '&_=' + Date.now(), { headers: { ...a.h, Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' }); if (r.ok) return await r.json() } catch (e) { } }
+      return await (await fetch('data.json?' + Date.now())).json()
+    }
+    async function enter() { D = await fetchData(); norm(); $('login').hidden = true; $('adm').hidden = false; $('bar').hidden = false; sessionStorage.setItem('ok', '1'); ui(); if (FBOK) fbStart() }
+    $('go').onclick = async () => { try { const d = await (await fetch('data.json?' + Date.now())).json(); if (await hash($('pw').value) === d.pass) await enter(); else $('le').textContent = 'Password salah.' } catch (e) { $('le').textContent = 'Gagal memuat data.' } };
+    $('pw').onkeydown = e => { if (e.key === 'Enter') $('go').click() };
+    if (sessionStorage.getItem('ok')) enter();
+
+    function ui() {
+      const s = D.settings, c = D.child; lkUI(); $('mode').value = s.mode; $('start').value = s.start; $('min').value = s.minutes; $('cn').value = c.name; $('pv').hidden = !c.photo; if (c.photo) $('pv').src = c.photo;
+      $('fl').innerHTML = D.folders.map((f, i) => `<div class="fo"><div class="fh"><select data-ic="${i}">${ICONS.map(x => `<option${x === f.icon ? ' selected' : ''}>${x}</option>`).join('')}</select><input class="w" data-n="${i}" value="${esc(f.name)}">
  <button class="m" data-a="fup" data-i="${i}">▲</button><button class="m" data-a="fdn" data-i="${i}">▼</button><button class="x" data-a="fdel" data-i="${i}">Hapus</button></div>
- <div class="r">${COLORS.map(x=>`<button class="sw${x===f.color?' on':''}" style="background:${x}" data-a="col" data-i="${i}" data-c="${x}" aria-label="Warna"></button>`).join('')}</div>`+
- f.videos.map((v,j)=>`<div class="v"><span>${v.bad?'⚠ ':''}${esc(v.title)}</span><div>${v.bad?`<button class="m" data-a="bad" data-i="${i}" data-j="${j}" title="Tandai bisa diputar">OK?</button>`:''}<button class="m" data-a="vup" data-i="${i}" data-j="${j}">▲</button><button class="m" data-a="vdn" data-i="${i}" data-j="${j}">▼</button><button class="x" data-a="vdel" data-i="${i}" data-j="${j}">✕</button></div></div>`).join('')+
- `<div class="r"><input class="w" id="l${i}" placeholder="Tempel link YouTube"><button data-a="add" data-i="${i}">Tambah</button></div></div>`).join('')||'<small>Belum ada folder.</small>'}
+ <div class="r">${COLORS.map(x => `<button class="sw${x === f.color ? ' on' : ''}" style="background:${x}" data-a="col" data-i="${i}" data-c="${x}" aria-label="Warna"></button>`).join('')}</div>` +
+        f.videos.map((v, j) => `<div class="v"><span>${v.bad ? '⚠ ' : ''}${esc(v.title)}</span><div>${v.bad ? `<button class="m" data-a="bad" data-i="${i}" data-j="${j}" title="Tandai bisa diputar">OK?</button>` : ''}<button class="m" data-a="vup" data-i="${i}" data-j="${j}">▲</button><button class="m" data-a="vdn" data-i="${i}" data-j="${j}">▼</button><button class="x" data-a="vdel" data-i="${i}" data-j="${j}">✕</button></div></div>`).join('') +
+        `<div class="r"><input class="w" id="l${i}" placeholder="Tempel link YouTube"><button data-a="add" data-i="${i}">Tambah</button></div></div>`).join('') || '<small>Belum ada folder.</small>'
+    }
 
-const PRE=['Waktunya makan','Waktunya tidur','Waktunya mandi','Waktunya belajar','Waktunya sholat','Ayo bantu mama'];
-$('chips').innerHTML=PRE.map(x=>`<button class="chip" data-p="${x}">${x}</button>`).join('');
-$('chips').onclick=e=>{const p=e.target.dataset.p;if(p){$('lkm').value=p;D.lock.msg=p;dirty()}};
-const fbReady=()=>FBOK&&db&&auth&&auth.currentUser;
-$('lkb').onclick=()=>{if(FBOK){if(!fbReady()){alert('Masuk dulu ke Firebase di tab ⭐ Penilaian agar kunci real-time bekerja.');tab(2);return}ref('lock').set({on:!(A.lock&&A.lock.on),msg:$('lkm').value.trim(),speak:$('lks').checked,ts:TS()});return}
- D.lock.on=!D.lock.on;D.lock.msg=$('lkm').value.trim();D.lock.speak=$('lks').checked;ui();dirty();$('sv').click()};
-$('lkm').onchange=()=>{if(FBOK){if(fbReady())ref('lock/msg').set($('lkm').value.trim());return}D.lock.msg=$('lkm').value.trim();dirty()};
-$('lks').onchange=()=>{if(FBOK){if(fbReady())ref('lock/speak').set($('lks').checked);return}D.lock.speak=$('lks').checked;dirty()};
-$('lkt').onclick=()=>{try{const u=new SpeechSynthesisUtterance($('lkm').value.trim()||'Waktunya makan');u.lang='id-ID';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){msg('Perangkat ini tidak mendukung suara.')}};
-['mode','start','min'].forEach(i=>$(i).onchange=()=>{const s=D.settings;s.mode=$('mode').value;s.start=$('start').value||'15:00';s.minutes=+$('min').value||60;dirty()});
-$('rst').onclick=()=>{D.settings.reset=(D.settings.reset||0)+1;dirty()};
-$('fa').onclick=()=>{const n=$('fn').value.trim();if(!n)return;D.folders.push({name:n,icon:ICONS[0],color:COLORS[0],videos:[]});$('fn').value='';ui();dirty()};
-$('npb').onclick=async()=>{const p=$('np').value;if(p.length<4)return msg('Password minimal 4 karakter.');D.pass=await hash(p);$('np').value='';dirty()};
-$('cn').onchange=()=>{D.child.name=$('cn').value.trim();dirty()};
-$('cr').onclick=()=>{D.child.photo='';$('cf').value='';ui();dirty()};
-$('cf').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=480;c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,480,480);D.child.photo=c.toDataURL('image/jpeg',.8);URL.revokeObjectURL(u);ui();dirty()};im.src=u};
+    const PRE = ['Waktunya makan', 'Waktunya tidur', 'Waktunya mandi', 'Waktunya belajar', 'Waktunya sholat', 'Ayo bantu mama'];
+    $('chips').innerHTML = PRE.map(x => `<button class="chip" data-p="${x}">${x}</button>`).join('');
+    $('chips').onclick = e => { const p = e.target.dataset.p; if (p) { $('lkm').value = p; D.lock.msg = p; dirty() } };
+    const fbReady = () => FBOK && db && auth && auth.currentUser;
+    $('lkb').onclick = () => {
+      if (FBOK) { if (!fbReady()) { alert('Masuk dulu ke Firebase di tab ⭐ Penilaian agar kunci real-time bekerja.'); tab(2); return } ref('lock').set({ on: !(A.lock && A.lock.on), msg: $('lkm').value.trim(), speak: $('lks').checked, ts: TS() }); return }
+      D.lock.on = !D.lock.on; D.lock.msg = $('lkm').value.trim(); D.lock.speak = $('lks').checked; ui(); dirty(); $('sv').click()
+    };
+    $('lkm').onchange = () => { if (FBOK) { if (fbReady()) ref('lock/msg').set($('lkm').value.trim()); return } D.lock.msg = $('lkm').value.trim(); dirty() };
+    $('lks').onchange = () => { if (FBOK) { if (fbReady()) ref('lock/speak').set($('lks').checked); return } D.lock.speak = $('lks').checked; dirty() };
+    $('lkt').onclick = () => { try { const u = new SpeechSynthesisUtterance($('lkm').value.trim() || 'Waktunya makan'); u.lang = 'id-ID'; u.rate = .85; speechSynthesis.cancel(); speechSynthesis.speak(u) } catch (e) { msg('Perangkat ini tidak mendukung suara.') } };
+    ['mode', 'start', 'min'].forEach(i => $(i).onchange = () => { const s = D.settings; s.mode = $('mode').value; s.start = $('start').value || '15:00'; s.minutes = +$('min').value || 60; dirty() });
+    $('rst').onclick = () => { D.settings.reset = (D.settings.reset || 0) + 1; dirty() };
+    $('fa').onclick = () => { const n = $('fn').value.trim(); if (!n) return; D.folders.push({ name: n, icon: ICONS[0], color: COLORS[0], videos: [] }); $('fn').value = ''; ui(); dirty() };
+    $('npb').onclick = async () => { const p = $('np').value; if (p.length < 4) return msg('Password minimal 4 karakter.'); D.pass = await hash(p); $('np').value = ''; dirty() };
+    $('cn').onchange = () => { D.child.name = $('cn').value.trim(); dirty() };
+    $('cr').onclick = () => { D.child.photo = ''; $('cf').value = ''; ui(); dirty() };
+    $('cf').onchange = e => { const f = e.target.files[0]; if (!f) return; const im = new Image(), u = URL.createObjectURL(f); im.onload = () => { const s = Math.min(im.width, im.height), c = document.createElement('canvas'); c.width = c.height = 480; c.getContext('2d').drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 480, 480); D.child.photo = c.toDataURL('image/jpeg', .8); URL.revokeObjectURL(u); ui(); dirty() }; im.src = u };
 
-$('fl').onchange=e=>{const t=e.target;if(t.dataset.n!==undefined)D.folders[+t.dataset.n].name=t.value.trim()||'Folder';else if(t.dataset.ic!==undefined)D.folders[+t.dataset.ic].icon=t.value;else return;dirty()};
-$('fl').onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,i=+b.dataset.i,j=+b.dataset.j,F=D.folders;
- if(a==='fup')mv(F,i,-1);else if(a==='fdn')mv(F,i,1);
- else if(a==='fdel'){if(!confirm('Hapus folder ini?'))return;F.splice(i,1)}
- else if(a==='vup')mv(F[i].videos,j,-1);else if(a==='vdn')mv(F[i].videos,j,1);
- else if(a==='vdel')F[i].videos.splice(j,1);
- else if(a==='bad')F[i].videos[j].bad=false;
- else if(a==='col')F[i].color=b.dataset.c;
- else if(a==='add'){const id=ytid($('l'+i).value.trim());if(!id)return msg('Link YouTube tidak dikenali.');
-  let t='Video '+id;try{const r=await oe(id);if(r.ok)t=(await r.json()).title}catch(x){}F[i].videos.push({id,title:t})}
- ui();dirty()};
+    $('fl').onchange = e => { const t = e.target; if (t.dataset.n !== undefined) D.folders[+t.dataset.n].name = t.value.trim() || 'Folder'; else if (t.dataset.ic !== undefined) D.folders[+t.dataset.ic].icon = t.value; else return; dirty() };
+    $('fl').onclick = async e => {
+      const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, i = +b.dataset.i, j = +b.dataset.j, F = D.folders;
+      if (a === 'fup') mv(F, i, -1); else if (a === 'fdn') mv(F, i, 1);
+      else if (a === 'fdel') { if (!confirm('Hapus folder ini?')) return; F.splice(i, 1) }
+      else if (a === 'vup') mv(F[i].videos, j, -1); else if (a === 'vdn') mv(F[i].videos, j, 1);
+      else if (a === 'vdel') F[i].videos.splice(j, 1);
+      else if (a === 'bad') F[i].videos[j].bad = false;
+      else if (a === 'col') F[i].color = b.dataset.c;
+      else if (a === 'add') {
+        const id = ytid($('l' + i).value.trim()); if (!id) return msg('Link YouTube tidak dikenali.');
+        let t = 'Video ' + id; try { const r = await oe(id); if (r.ok) t = (await r.json()).title } catch (x) { } F[i].videos.push({ id, title: t })
+      }
+      ui(); dirty()
+    };
 
-$('ck').onclick=async()=>{msg('Memeriksa video...');const res=[];
- for(const f of D.folders)for(const v of f.videos){let s;try{s=(await oe(v.id)).ok?'ok':'bad'}catch(e){s='err'}res.push([v,s])}
- const anyOk=res.some(x=>x[1]==='ok');let n=0;res.forEach(([v,s])=>{v.bad=s==='bad'||(s==='err'&&anyOk);if(v.bad)n++});ui();dirty();
- msg(!res.length?'Belum ada video.':!anyOk?'Tidak bisa memeriksa sekarang. Cek internet.':n?n+' video diduga bermasalah (ditandai ⚠ dan disembunyikan di TV). Simpan untuk menerapkan.':'Semua video bisa diputar.')};
+    $('ck').onclick = async () => {
+      msg('Memeriksa video...'); const res = [];
+      for (const f of D.folders) for (const v of f.videos) { let s; try { s = (await oe(v.id)).ok ? 'ok' : 'bad' } catch (e) { s = 'err' } res.push([v, s]) }
+      const anyOk = res.some(x => x[1] === 'ok'); let n = 0; res.forEach(([v, s]) => { v.bad = s === 'bad' || (s === 'err' && anyOk); if (v.bad) n++ }); ui(); dirty();
+      msg(!res.length ? 'Belum ada video.' : !anyOk ? 'Tidak bisa memeriksa sekarang. Cek internet.' : n ? n + ' video diduga bermasalah (ditandai ⚠ dan disembunyikan di TV). Simpan untuk menerapkan.' : 'Semua video bisa diputar.')
+    };
 
-$('cp').onclick=()=>navigator.clipboard.writeText(JSON.stringify(D,null,1)).then(()=>msg('JSON disalin. Tempel ke data.json di GitHub.'));
-$('sv').onclick=async()=>{const g=cfg();if(!g.o||!g.r||!g.t)return msg('Isi koneksi GitHub dulu (username, repository, token).');localStorage.setItem('gh',JSON.stringify(g));msg('Menyimpan...');
- try{const a=gh(g),content=btoa(unescape(encodeURIComponent(JSON.stringify(D,null,1))));let p;
-  for(let n=0;n<3;n++){let sha;const r=await fetch(a.url+'?ref='+g.b+'&_='+Date.now(),{headers:a.h,cache:'no-store'});if(r.ok)sha=(await r.json()).sha;
-   p=await fetch(a.url,{method:'PUT',headers:a.h,cache:'no-store',body:JSON.stringify({message:'Update data TV Anak',branch:g.b,sha,content})});
-   if(p.status!==409)break;await new Promise(z=>setTimeout(z,1500))}
-  msg(p.ok?'Tersimpan. TV membaca perubahan dalam 1-2 menit.':'Gagal menyimpan (kode '+p.status+'). '+(p.status===409?'File sedang berubah, tunggu 10 detik lalu coba lagi.':p.status===422?'Cek nama branch.':'Cek token dan nama repository.'))}catch(e){msg('Gagal terhubung ke GitHub.')}};
+    $('cp').onclick = () => navigator.clipboard.writeText(JSON.stringify(D, null, 1)).then(() => msg('JSON disalin. Tempel ke data.json di GitHub.'));
+    $('sv').onclick = async () => {
+      const g = cfg(); if (!g.o || !g.r || !g.t) return msg('Isi koneksi GitHub dulu (username, repository, token).'); localStorage.setItem('gh', JSON.stringify(g)); msg('Menyimpan...');
+      try {
+        const a = gh(g), content = btoa(unescape(encodeURIComponent(JSON.stringify(D, null, 1)))); let p;
+        for (let n = 0; n < 3; n++) {
+          let sha; const r = await fetch(a.url + '?ref=' + g.b + '&_=' + Date.now(), { headers: a.h, cache: 'no-store' }); if (r.ok) sha = (await r.json()).sha;
+          p = await fetch(a.url, { method: 'PUT', headers: a.h, cache: 'no-store', body: JSON.stringify({ message: 'Update data TV Anak', branch: g.b, sha, content }) });
+          if (p.status !== 409) break; await new Promise(z => setTimeout(z, 1500))
+        }
+        msg(p.ok ? 'Tersimpan. TV membaca perubahan dalam 1-2 menit.' : 'Gagal menyimpan (kode ' + p.status + '). ' + (p.status === 409 ? 'File sedang berubah, tunggu 10 detik lalu coba lagi.' : p.status === 422 ? 'Cek nama branch.' : 'Cek token dan nama repository.'))
+      } catch (e) { msg('Gagal terhubung ke GitHub.') }
+    };
 
-/* ===== Penilaian (Firebase) ===== */
-const FBOK=!!(window.FBC&&FBC.apiKey&&!/ISI/.test(FBC.apiKey)&&window.firebase);
-let db,auth,A={},PH={},stab='td',listening=false,day0='';
-const pad=n=>String(n).padStart(2,'0'),ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-const monday=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-(x.getDay()+6)%7);return x};
-const ls=o=>Object.entries(o||{}).map(([id,v])=>({id,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
-const acts=k=>ls(A.activities).filter(a=>a.kids==='all'||(a.kids&&a.kids[k]));
-const scOf=(k,d)=>(A.scores&&A.scores[k]&&A.scores[k][d])||{};
-const dayTot=(k,d)=>{const s=scOf(k,d);return acts(k).reduce((n,a)=>n+Math.min(+s[a.id]||0,a.max||3),0)};
-const wdays=()=>{const m=monday(new Date());return Array.from({length:7},(_,i)=>{const x=new Date(m);x.setDate(m.getDate()+i);return x})};
-const weekTot=k=>wdays().reduce((n,x)=>n+dayTot(k,ds(x)),0);
-const AIC=['🪥','🥦','🧸','📖','🕌','🛏️','🤝','🍽️','🚿','✏️','🧹','🥛','🎵','🏃'];
-const ref=p=>db.ref('app/'+p),TS=()=>firebase.database.ServerValue.TIMESTAMP;
-const ava=k=>{const p=PH[k.id];return p?`<img class="avt" src="${p}" alt="">`:`<span class="avt">${esc((k.name||'?')[0])}</span>`};
-day0=ds(new Date());
+    /* ===== Penilaian (Firebase) ===== */
+    const FBOK = !!(window.FBC && FBC.apiKey && !/ISI/.test(FBC.apiKey) && window.firebase);
+    let db, auth, A = {}, PH = {}, stab = 'td', listening = false, day0 = '';
+    const pad = n => String(n).padStart(2, '0'), ds = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    const monday = d => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x };
+    const ls = o => Object.entries(o || {}).map(([id, v]) => ({ id, ...v })).sort((a, b) => (a.order || 0) - (b.order || 0));
+    const acts = k => ls(A.activities).filter(a => a.kids === 'all' || (a.kids && a.kids[k]));
+    const scOf = (k, d) => (A.scores && A.scores[k] && A.scores[k][d]) || {};
+    const dayTot = (k, d) => { const s = scOf(k, d); return acts(k).reduce((n, a) => n + Math.min(+s[a.id] || 0, a.max || 3), 0) };
+    const wdays = () => { const m = monday(new Date()); return Array.from({ length: 7 }, (_, i) => { const x = new Date(m); x.setDate(m.getDate() + i); return x }) };
+    const weekTot = k => wdays().reduce((n, x) => n + dayTot(k, ds(x)), 0);
+    const AIC = ['🪥', '🥦', '🧸', '📖', '🕌', '🛏️', '🤝', '🍽️', '🚿', '✏️', '🧹', '🥛', '🎵', '🏃'];
+    const ref = p => db.ref('app/' + p), TS = () => firebase.database.ServerValue.TIMESTAMP;
+    const ava = k => { const p = PH[k.id]; return p ? `<img class="avt" src="${p}" alt="">` : `<span class="avt">${esc((k.name || '?')[0])}</span>` };
+    day0 = ds(new Date());
 
-function lkUI(){const L=FBOK?(A.lock||{}):D.lock;$('lkb').className='lkb '+(L.on?'on':'off');$('lkb').textContent=L.on?'🔒 TV DIKUNCI. Tekan untuk membuka':'🔓 TV tidak dikunci. Tekan untuk mengunci';
- if(document.activeElement!==$('lkm'))$('lkm').value=L.msg||'';$('lks').checked=L.speak!==false;
- $('lkn').textContent=FBOK?(auth&&auth.currentUser?'Real-time lewat Firebase: TV terkunci dalam beberapa detik. Perubahan pesan langsung terkirim.':'Masuk Firebase di tab ⭐ Penilaian agar kunci bekerja real-time.'):'Tombol kunci menyimpan ke GitHub. TV menerima dalam sekitar 1-3 menit.'}
-function tab(n){$('pv1').hidden=n!==1;$('pv2').hidden=n!==2;$('t1').className='tb'+(n===1?' on':'');$('t2').className='tb'+(n===2?' on':'');$('bar').hidden=n!==1;if(n===2)fbStart()}
-$('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
+    function lkUI() {
+      const L = FBOK ? (A.lock || {}) : D.lock; $('lkb').className = 'lkb ' + (L.on ? 'on' : 'off'); $('lkb').textContent = L.on ? '🔒 TV DIKUNCI. Tekan untuk membuka' : '🔓 TV tidak dikunci. Tekan untuk mengunci';
+      if (document.activeElement !== $('lkm')) $('lkm').value = L.msg || ''; $('lks').checked = L.speak !== false;
+      $('lkn').textContent = FBOK ? (auth && auth.currentUser ? 'Real-time lewat Firebase: TV terkunci dalam beberapa detik. Perubahan pesan langsung terkirim.' : 'Masuk Firebase di tab ⭐ Penilaian agar kunci bekerja real-time.') : 'Tombol kunci menyimpan ke GitHub. TV menerima dalam sekitar 1-3 menit.'
+    }
+    function tab(n) { $('pv1').hidden = n !== 1; $('pv2').hidden = n !== 2; $('t1').className = 'tb' + (n === 1 ? ' on' : ''); $('t2').className = 'tb' + (n === 2 ? ' on' : ''); $('bar').hidden = n !== 1; if (n === 2) fbStart() }
+    $('t1').onclick = () => tab(1); $('t2').onclick = () => tab(2);
 
-function fbStart(){if(!FBOK){$('fbno').hidden=false;return}if(db)return;
- firebase.initializeApp(FBC);auth=firebase.auth();db=firebase.database();
- auth.onAuthStateChanged(u=>{$('fbin').hidden=!!u;$('fbon').hidden=!u;lkUI();if(u&&!listening){listening=true;ref('').on('value',s=>{A=s.val()||{};R();lkUI()});db.ref('photos').on('value',s=>{PH=s.val()||{};R()})}})}
-$('fgo').onclick=()=>auth.signInWithEmailAndPassword($('fe').value.trim(),$('fp').value).catch(e=>$('fer').textContent='Gagal masuk ('+e.code+'). Cek email dan password.');
-$('fp').onkeydown=e=>{if(e.key==='Enter')$('fgo').click()};
+    function fbStart() {
+      if (!FBOK) { $('fbno').hidden = false; return } if (db) return;
+      firebase.initializeApp(FBC); auth = firebase.auth(); db = firebase.database();
+      auth.onAuthStateChanged(u => { $('fbin').hidden = !!u; $('fbon').hidden = !u; lkUI(); if (u && !listening) { listening = true; ref('').on('value', s => { A = s.val() || {}; R(); lkUI() }); db.ref('photos').on('value', s => { PH = s.val() || {}; R() }) } })
+    }
+    $('fgo').onclick = () => auth.signInWithEmailAndPassword($('fe').value.trim(), $('fp').value).catch(e => $('fer').textContent = 'Gagal masuk (' + e.code + '). Cek email dan password.');
+    $('fp').onkeydown = e => { if (e.key === 'Enter') $('fgo').click() };
 
-function R(){if(!$('fbon').hidden)({td:rTd,tk:rTk,ta:rTa,tr:rTr,th:rTh,tg:rTg})[stab]()}
-const none='<small>Belum ada data.</small>';
+    function R() { if (!$('fbon').hidden) ({ td: rTd, tk: rTk, ta: rTa, tr: rTr, th: rTh, tg: rTg })[stab]() }
+    const none = '<small>Belum ada data.</small>';
 
-function rTd(){const ks=ls(A.kids).filter(k=>k.active!==false),d=day0;
- $('td').innerHTML=`<h2>Penilaian</h2><div class="r"><label>Tanggal <input type="date" id="dd" value="${d}" max="${ds(new Date())}"></label></div><small>Ketuk bintang untuk menilai. Ketuk bintang yang sama untuk menghapus. Penilaian hari ini langsung tampil di TV.</small>`+
- (ks.length?ks.map(k=>{const ac=acts(k.id),s=scOf(k.id,d);return `<div class="fo"><div class="fh">${ava(k)}<b style="flex:1">${esc(k.name)}</b><span>⭐ ${dayTot(k.id,d)}</span></div>`+
-  (ac.map(a=>{const v=Math.min(+s[a.id]||0,a.max||3);return `<div class="v"><span>${esc(a.icon||'⭐')} ${esc(a.name)}</span><div>`+Array.from({length:a.max||3},(_,i)=>`<button class="sb${i<v?' on':''}" data-act="star" data-k="${k.id}" data-a="${a.id}" data-n="${i+1}">${i<v?'⭐':'☆'}</button>`).join('')+'</div></div>'}).join('')||'<small>Belum ada kegiatan untuk anak ini (tab Kegiatan).</small>')+
-  `<div class="r"><input class="w" data-pr="${k.id}" value="${esc(((A.praise||{})[k.id]||{})[d]||'')}" placeholder="Pujian hari ini (dibacakan di TV)"></div></div>`}).join(''):'<small>Belum ada anak. Tambahkan di tab Anak.</small>')}
+    function rTd() {
+      const ks = ls(A.kids).filter(k => k.active !== false), d = day0;
+      $('td').innerHTML = `<h2>Penilaian</h2><div class="r"><label>Tanggal <input type="date" id="dd" value="${d}" max="${ds(new Date())}"></label></div><small>Ketuk bintang untuk menilai. Ketuk bintang yang sama untuk menghapus. Penilaian hari ini langsung tampil di TV.</small>` +
+        (ks.length ? ks.map(k => {
+          const ac = acts(k.id), s = scOf(k.id, d); return `<div class="fo"><div class="fh">${ava(k)}<b style="flex:1">${esc(k.name)}</b><span>⭐ ${dayTot(k.id, d)}</span></div>` +
+            (ac.map(a => { const v = Math.min(+s[a.id] || 0, a.max || 3); return `<div class="v"><span>${esc(a.icon || '⭐')} ${esc(a.name)}</span><div>` + Array.from({ length: a.max || 3 }, (_, i) => `<button class="sb${i < v ? ' on' : ''}" data-act="star" data-k="${k.id}" data-a="${a.id}" data-n="${i + 1}">${i < v ? '⭐' : '☆'}</button>`).join('') + '</div></div>' }).join('') || '<small>Belum ada kegiatan untuk anak ini (tab Kegiatan).</small>') +
+            `<div class="r"><input class="w" data-pr="${k.id}" value="${esc(((A.praise || {})[k.id] || {})[d] || '')}" placeholder="Pujian hari ini (dibacakan di TV)"></div></div>`
+        }).join('') : '<small>Belum ada anak. Tambahkan di tab Anak.</small>')
+    }
 
-function rTk(){$('tk').innerHTML='<h2>Anak</h2><div class="r"><input class="w" id="kn" placeholder="Nama panggilan"><button data-act="kadd">Tambah anak</button></div>'+
- (ls(A.kids).map(k=>`<div class="fo"><div class="fh">${ava(k)}<input class="w" data-kn="${k.id}" value="${esc(k.name)}"><button class="m" data-act="kup" data-id="${k.id}">▲</button><button class="m" data-act="kdn" data-id="${k.id}">▼</button><button class="x" data-act="kdel" data-id="${k.id}">Hapus</button></div>
- <div class="r">${COLORS.map(c=>`<button class="sw${c===k.color?' on':''}" style="background:${c}" data-act="kcol" data-id="${k.id}" data-c="${c}" aria-label="Warna"></button>`).join('')}</div>
- <div class="r"><input type="file" accept="image/*" data-kf="${k.id}"><label class="chk"><input type="checkbox" data-kc="${k.id}"${k.active!==false?' checked':''}> Tampil di TV</label></div></div>`).join('')||none)}
+    function rTk() {
+      $('tk').innerHTML = '<h2>Anak</h2><div class="r"><input class="w" id="kn" placeholder="Nama panggilan"><button data-act="kadd">Tambah anak</button></div>' +
+        (ls(A.kids).map(k => `<div class="fo"><div class="fh">${ava(k)}<input class="w" data-kn="${k.id}" value="${esc(k.name)}"><button class="m" data-act="kup" data-id="${k.id}">▲</button><button class="m" data-act="kdn" data-id="${k.id}">▼</button><button class="x" data-act="kdel" data-id="${k.id}">Hapus</button></div>
+ <div class="r">${COLORS.map(c => `<button class="sw${c === k.color ? ' on' : ''}" style="background:${c}" data-act="kcol" data-id="${k.id}" data-c="${c}" aria-label="Warna"></button>`).join('')}</div>
+ <div class="r"><input type="file" accept="image/*" data-kf="${k.id}"><label class="chk"><input type="checkbox" data-kc="${k.id}"${k.active !== false ? ' checked' : ''}> Tampil di TV</label></div></div>`).join('') || none)
+    }
 
-function rTa(){const ks=ls(A.kids);$('ta').innerHTML='<h2>Kegiatan</h2><div class="r"><input class="w" id="an" placeholder="Nama kegiatan, misalnya Sikat gigi"><select id="ai">'+AIC.map(x=>`<option>${x}</option>`).join('')+'</select><select id="am"><option>3</option><option>2</option><option>1</option></select><button data-act="aadd">Tambah</button></div><small>Angka di samping ikon = bintang maksimal per kegiatan.</small>'+
- (ls(A.activities).map(a=>`<div class="fo"><div class="fh"><select data-ai="${a.id}">${AIC.map(x=>`<option${x===a.icon?' selected':''}>${x}</option>`).join('')}</select><input class="w" data-an="${a.id}" value="${esc(a.name)}"><select data-am="${a.id}">${[3,2,1].map(n=>`<option${n===(a.max||3)?' selected':''}>${n}</option>`).join('')}</select>
+    function rTa() {
+      const ks = ls(A.kids); $('ta').innerHTML = '<h2>Kegiatan</h2><div class="r"><input class="w" id="an" placeholder="Nama kegiatan, misalnya Sikat gigi"><select id="ai">' + AIC.map(x => `<option>${x}</option>`).join('') + '</select><select id="am"><option>3</option><option>2</option><option>1</option></select><button data-act="aadd">Tambah</button></div><small>Angka di samping ikon = bintang maksimal per kegiatan.</small>' +
+        (ls(A.activities).map(a => `<div class="fo"><div class="fh"><select data-ai="${a.id}">${AIC.map(x => `<option${x === a.icon ? ' selected' : ''}>${x}</option>`).join('')}</select><input class="w" data-an="${a.id}" value="${esc(a.name)}"><select data-am="${a.id}">${[3, 2, 1].map(n => `<option${n === (a.max || 3) ? ' selected' : ''}>${n}</option>`).join('')}</select>
  <button class="m" data-act="aup" data-id="${a.id}">▲</button><button class="m" data-act="adn" data-id="${a.id}">▼</button><button class="x" data-act="adel" data-id="${a.id}">Hapus</button></div>
- <div class="r"><small>Untuk:</small>${ks.map(k=>`<label class="chk"><input type="checkbox" data-ak="${k.id}" data-a="${a.id}"${a.kids==='all'||(a.kids&&a.kids[k.id])?' checked':''}> ${esc(k.name)}</label>`).join('')}</div></div>`).join('')||none)}
+ <div class="r"><small>Untuk:</small>${ks.map(k => `<label class="chk"><input type="checkbox" data-ak="${k.id}" data-a="${a.id}"${a.kids === 'all' || (a.kids && a.kids[k.id]) ? ' checked' : ''}> ${esc(k.name)}</label>`).join('')}</div></div>`).join('') || none)
+    }
 
-function rTr(){const ks=ls(A.kids),mon=ds(monday(new Date()));$('tr').innerHTML='<h2>Hadiah mingguan</h2><div class="r"><select id="rk"><option value="all">Semua anak</option>'+ks.map(k=>`<option value="${k.id}">${esc(k.name)}</option>`).join('')+'</select><select id="ri">'+['🎁','🎡','🍦','🧸','🚲','🎬','⚽','🍕'].map(x=>`<option>${x}</option>`).join('')+'</select></div><div class="r"><input class="w" id="rt" placeholder="Hadiah, misalnya Jalan-jalan ke taman"><input id="rg" type="number" min="1" value="20" style="width:90px"><button data-act="radd">Tambah</button></div><small>Angka = target bintang dalam satu minggu (Senin-Minggu).</small>'+
- (ls(A.rewards).map(r=>{const who=r.kid==='all'?ks:ks.filter(k=>k.id===r.kid);return `<div class="fo"><div class="fh"><span style="font-size:26px">${esc(r.icon||'🎁')}</span><input class="w" data-rt="${r.id}" value="${esc(r.title)}"><input type="number" min="1" data-rg="${r.id}" value="${r.target}" style="width:80px"><button class="x" data-act="rdel" data-id="${r.id}">Hapus</button></div>`+
-  who.map(k=>{const wt=weekTot(k.id),ok=wt>=r.target,cl=(((A.claimed||{})[r.id]||{})[k.id]||{})[mon];return `<div class="v"><span>${esc(k.name)}: ${wt}/${r.target} ⭐ ${ok?'🎉 tercapai':''}</span><div>${ok?`<button class="${cl?'s':''}" data-act="rclaim" data-id="${r.id}" data-k="${k.id}" data-w="${mon}">${cl?'✓ Sudah diberikan':'Tandai sudah diberikan'}</button>`:''}</div></div>`}).join('')+'</div>'}).join('')||none)}
+    function rTr() {
+      const ks = ls(A.kids), mon = ds(monday(new Date())); $('tr').innerHTML = '<h2>Hadiah mingguan</h2><div class="r"><select id="rk"><option value="all">Semua anak</option>' + ks.map(k => `<option value="${k.id}">${esc(k.name)}</option>`).join('') + '</select><select id="ri">' + ['🎁', '🎡', '🍦', '🧸', '🚲', '🎬', '⚽', '🍕'].map(x => `<option>${x}</option>`).join('') + '</select></div><div class="r"><input class="w" id="rt" placeholder="Hadiah, misalnya Jalan-jalan ke taman"><input id="rg" type="number" min="1" value="20" style="width:90px"><button data-act="radd">Tambah</button></div><small>Angka = target bintang dalam satu minggu (Senin-Minggu).</small>' +
+        (ls(A.rewards).map(r => {
+          const who = r.kid === 'all' ? ks : ks.filter(k => k.id === r.kid); return `<div class="fo"><div class="fh"><span style="font-size:26px">${esc(r.icon || '🎁')}</span><input class="w" data-rt="${r.id}" value="${esc(r.title)}"><input type="number" min="1" data-rg="${r.id}" value="${r.target}" style="width:80px"><button class="x" data-act="rdel" data-id="${r.id}">Hapus</button></div>` +
+            who.map(k => { const wt = weekTot(k.id), ok = wt >= r.target, cl = (((A.claimed || {})[r.id] || {})[k.id] || {})[mon]; return `<div class="v"><span>${esc(k.name)}: ${wt}/${r.target} ⭐ ${ok ? '🎉 tercapai' : ''}</span><div>${ok ? `<button class="${cl ? 's' : ''}" data-act="rclaim" data-id="${r.id}" data-k="${k.id}" data-w="${mon}">${cl ? '✓ Sudah diberikan' : 'Tandai sudah diberikan'}</button>` : ''}</div></div>` }).join('') + '</div>'
+        }).join('') || none)
+    }
 
-function rTh(){const ks=ls(A.kids),L=['Sen','Sel','Rab','Kam','Jum','Sab','Min'];$('th').innerHTML='<h2>Riwayat minggu ini</h2>'+(ks.length?'<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;text-align:center"><tr><th style="text-align:left">Anak</th>'+L.map(x=>'<th>'+x+'</th>').join('')+'<th>Total</th></tr>'+ks.map(k=>`<tr style="border-top:1px solid #eee"><td style="text-align:left;padding:8px 0">${esc(k.name)}</td>`+wdays().map(x=>'<td>'+dayTot(k.id,ds(x))+'</td>').join('')+`<td><b>${weekTot(k.id)}</b></td></tr>`).join('')+'</table></div>':none)+'<div class="r"><button class="s" data-act="clean">Bersihkan riwayat lebih dari 60 hari</button></div>'}
+    function rTh() { const ks = ls(A.kids), L = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']; $('th').innerHTML = '<h2>Riwayat minggu ini</h2>' + (ks.length ? '<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;text-align:center"><tr><th style="text-align:left">Anak</th>' + L.map(x => '<th>' + x + '</th>').join('') + '<th>Total</th></tr>' + ks.map(k => `<tr style="border-top:1px solid #eee"><td style="text-align:left;padding:8px 0">${esc(k.name)}</td>` + wdays().map(x => '<td>' + dayTot(k.id, ds(x)) + '</td>').join('') + `<td><b>${weekTot(k.id)}</b></td></tr>`).join('') + '</table></div>' : none) + '<div class="r"><button class="s" data-act="clean">Bersihkan riwayat lebih dari 60 hari</button></div>' }
 
-function rTg(){const g=A.game||{},its=ls(g.items);$('tg').innerHTML=`<h2>Gambar untuk permainan Huruf Awal</h2><small>Anak melihat gambar dan memilih huruf awal nama bendanya. Tersedia 24 gambar bawaan (huruf A sampai W dan Z). Tambahkan gambar sendiri di bawah, misalnya foto benda atau anggota keluarga.</small>
- <div class="r"><label class="chk"><input type="checkbox" id="gdef"${g.useDefault===false?'':' checked'}> Pakai gambar bawaan</label></div>
+    function rTg() {
+      const g = A.game || {}, its = ls(g.items); $('tg').innerHTML = `<h2>Gambar untuk permainan Huruf Awal</h2><small>Anak melihat gambar dan memilih huruf awal nama bendanya. Tersedia 24 gambar bawaan (huruf A sampai W dan Z). Tambahkan gambar sendiri di bawah, misalnya foto benda atau anggota keluarga.</small>
+ <div class="r"><label class="chk"><input type="checkbox" id="gdef"${g.useDefault === false ? '' : ' checked'}> Pakai gambar bawaan</label></div>
  <div class="r"><input class="w" id="gw" placeholder="Nama benda, misalnya Xilofon"><input id="ge" placeholder="Emoji (opsional)" style="width:140px"></div>
  <div class="r"><input type="file" id="gf" accept="image/*"><button data-act="gadd">Tambah</button></div><small>Isi emoji atau pilih foto. Huruf awal diambil dari huruf pertama nama benda.</small>`+
- (its.map(x=>{const p=PH['g_'+x.id];return `<div class="v"><span>${p?`<img class="avt" src="${p}" alt="">`:esc(x.emoji||'')} ${esc(x.word)} &rarr; <b>${esc((x.word||'').trim().charAt(0).toUpperCase())}</b></span><div><button class="x" data-act="gdel" data-id="${x.id}">✕</button></div></div>`}).join('')||'<div class="v"><small>Belum ada gambar tambahan.</small></div>')}
-function setScore(k,a,d,n){const cur=+scOf(k,d)[a]||0,before=dayTot(k,d),r=ref(`scores/${k}/${d}/${a}`);n?r.set(n):r.remove();
- if(n>cur&&d===ds(new Date())){const kid=A.kids[k],ac=A.activities[a],tot=before-cur+n;ref('events/last').set({kid:k,stars:n,ts:TS(),text:`Hebat, ${kid.name}! ${ac.name} dapat ${n} bintang. Hari ini sudah ${tot} bintang!`})}}
-function mv(path,list,id,dir){const i=list.findIndex(x=>x.id===id),j=i+dir;if(j<0||j>=list.length)return;const a=list[i],b=list[j],u={};u[a.id+'/order']=b.order||j;u[b.id+'/order']=a.order||i;if(u[a.id+'/order']===u[b.id+'/order'])u[a.id+'/order']=u[b.id+'/order']+dir;ref(path).update(u)}
-function pic(file,cb){const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=256;c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);URL.revokeObjectURL(u);cb(c.toDataURL('image/jpeg',.75))};im.src=u}
+        (its.map(x => { const p = PH['g_' + x.id]; return `<div class="v"><span>${p ? `<img class="avt" src="${p}" alt="">` : esc(x.emoji || '')} ${esc(x.word)} &rarr; <b>${esc((x.word || '').trim().charAt(0).toUpperCase())}</b></span><div><button class="x" data-act="gdel" data-id="${x.id}">✕</button></div></div>` }).join('') || '<div class="v"><small>Belum ada gambar tambahan.</small></div>')
+    }
+    function setScore(k, a, d, n) {
+      const cur = +scOf(k, d)[a] || 0, before = dayTot(k, d), r = ref(`scores/${k}/${d}/${a}`); n ? r.set(n) : r.remove();
+      if (n > cur && d === ds(new Date())) { const kid = A.kids[k], ac = A.activities[a], tot = before - cur + n; ref('events/last').set({ kid: k, stars: n, ts: TS(), text: `Hebat, ${kid.name}! ${ac.name} dapat ${n} bintang. Hari ini sudah ${tot} bintang!` }) }
+    }
+    function mv(path, list, id, dir) { const i = list.findIndex(x => x.id === id), j = i + dir; if (j < 0 || j >= list.length) return; const a = list[i], b = list[j], u = {}; u[a.id + '/order'] = b.order || j; u[b.id + '/order'] = a.order || i; if (u[a.id + '/order'] === u[b.id + '/order']) u[a.id + '/order'] = u[b.id + '/order'] + dir; ref(path).update(u) }
+    function pic(file, cb) { const im = new Image(), u = URL.createObjectURL(file); im.onload = () => { const s = Math.min(im.width, im.height), c = document.createElement('canvas'); c.width = c.height = 256; c.getContext('2d').drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 256, 256); URL.revokeObjectURL(u); cb(c.toDataURL('image/jpeg', .75)) }; im.src = u }
 
-$('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
- if(d.s){stab=d.s;document.querySelectorAll('#fbon .tabs .tb').forEach(x=>x.className='tb'+(x.dataset.s===stab?' on':''));['td','tk','ta','tr','th','tg'].forEach(i=>$(i).hidden=i!==stab);return R()}
- if(b.id==='fout')return auth.signOut();
- const a=d.act;if(!a)return;const K=ls(A.kids),AC=ls(A.activities);
- if(a==='star'){const cur=+scOf(d.k,day0)[d.a]||0;setScore(d.k,d.a,day0,+d.n===cur?0:+d.n)}
- else if(a==='kadd'){const n=$('kn').value.trim();if(!n)return;const id=ref('kids').push().key;ref('kids/'+id).set({name:n,color:COLORS[K.length%COLORS.length],order:Date.now(),active:true,photoV:0})}
- else if(a==='kup'||a==='kdn')mv('kids',K,d.id,a==='kup'?-1:1);
- else if(a==='kcol')ref('kids/'+d.id+'/color').set(d.c);
- else if(a==='kdel'){if(!confirm('Hapus anak ini beserta semua nilainya?'))return;const u={};u['kids/'+d.id]=null;u['scores/'+d.id]=null;u['praise/'+d.id]=null;ls(A.rewards).filter(r=>r.kid===d.id).forEach(r=>u['rewards/'+r.id]=null);await ref('').update(u);db.ref('photos/'+d.id).remove()}
- else if(a==='aadd'){const n=$('an').value.trim();if(!n)return;const id=ref('activities').push().key;ref('activities/'+id).set({name:n,icon:$('ai').value,max:+$('am').value,order:Date.now(),kids:'all'})}
- else if(a==='aup'||a==='adn')mv('activities',AC,d.id,a==='aup'?-1:1);
- else if(a==='adel'){if(confirm('Hapus kegiatan ini?'))ref('activities/'+d.id).remove()}
- else if(a==='radd'){const t=$('rt').value.trim();if(!t)return;const id=ref('rewards').push().key;ref('rewards/'+id).set({kid:$('rk').value,title:t,icon:$('ri').value,target:+$('rg').value||20,order:Date.now()})}
- else if(a==='rdel'){if(confirm('Hapus hadiah ini?'))ref('rewards/'+d.id).remove()}
- else if(a==='rclaim'){const r=ref(`claimed/${d.id}/${d.k}/${d.w}`),cur=(((A.claimed||{})[d.id]||{})[d.k]||{})[d.w];cur?r.remove():r.set(true)}
- else if(a==='gadd'){const w=$('gw').value.trim(),em=$('ge').value.trim(),f=$('gf').files[0];if(!/^[A-Za-z]/.test(w))return alert('Nama benda harus diawali huruf A sampai Z.');if(!em&&!f)return alert('Isi emoji atau pilih foto.');const id=ref('game/items').push().key;await ref('game/items/'+id).set({word:w,emoji:em,order:Date.now(),photoV:0});if(f)pic(f,url=>db.ref('photos/g_'+id).set(url).then(()=>ref('game/items/'+id+'/photoV').set(Date.now())))}
- else if(a==='gdel'){if(confirm('Hapus gambar ini?')){ref('game/items/'+d.id).remove();db.ref('photos/g_'+d.id).remove()}}
- else if(a==='clean'){const cut=ds(new Date(Date.now()-60*864e5)),u={};let n=0;['scores','praise'].forEach(p=>Object.keys(A[p]||{}).forEach(k=>Object.keys(A[p][k]).forEach(x=>{if(x<cut){u[p+'/'+k+'/'+x]=null;n++}})));if(n)await ref('').update(u);alert(n+' data lama dibersihkan.')}};
+    $('fbon').onclick = async e => {
+      const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
+      if (d.s) { stab = d.s; document.querySelectorAll('#fbon .tabs .tb').forEach(x => x.className = 'tb' + (x.dataset.s === stab ? ' on' : ''));['td', 'tk', 'ta', 'tr', 'th', 'tg'].forEach(i => $(i).hidden = i !== stab); return R() }
+      if (b.id === 'fout') return auth.signOut();
+      const a = d.act; if (!a) return; const K = ls(A.kids), AC = ls(A.activities);
+      if (a === 'star') { const cur = +scOf(d.k, day0)[d.a] || 0; setScore(d.k, d.a, day0, +d.n === cur ? 0 : +d.n) }
+      else if (a === 'kadd') { const n = $('kn').value.trim(); if (!n) return; const id = ref('kids').push().key; ref('kids/' + id).set({ name: n, color: COLORS[K.length % COLORS.length], order: Date.now(), active: true, photoV: 0 }) }
+      else if (a === 'kup' || a === 'kdn') mv('kids', K, d.id, a === 'kup' ? -1 : 1);
+      else if (a === 'kcol') ref('kids/' + d.id + '/color').set(d.c);
+      else if (a === 'kdel') { if (!confirm('Hapus anak ini beserta semua nilainya?')) return; const u = {}; u['kids/' + d.id] = null; u['scores/' + d.id] = null; u['praise/' + d.id] = null; ls(A.rewards).filter(r => r.kid === d.id).forEach(r => u['rewards/' + r.id] = null); await ref('').update(u); db.ref('photos/' + d.id).remove() }
+      else if (a === 'aadd') { const n = $('an').value.trim(); if (!n) return; const id = ref('activities').push().key; ref('activities/' + id).set({ name: n, icon: $('ai').value, max: +$('am').value, order: Date.now(), kids: 'all' }) }
+      else if (a === 'aup' || a === 'adn') mv('activities', AC, d.id, a === 'aup' ? -1 : 1);
+      else if (a === 'adel') { if (confirm('Hapus kegiatan ini?')) ref('activities/' + d.id).remove() }
+      else if (a === 'radd') { const t = $('rt').value.trim(); if (!t) return; const id = ref('rewards').push().key; ref('rewards/' + id).set({ kid: $('rk').value, title: t, icon: $('ri').value, target: +$('rg').value || 20, order: Date.now() }) }
+      else if (a === 'rdel') { if (confirm('Hapus hadiah ini?')) ref('rewards/' + d.id).remove() }
+      else if (a === 'rclaim') { const r = ref(`claimed/${d.id}/${d.k}/${d.w}`), cur = (((A.claimed || {})[d.id] || {})[d.k] || {})[d.w]; cur ? r.remove() : r.set(true) }
+      else if (a === 'gadd') { const w = $('gw').value.trim(), em = $('ge').value.trim(), f = $('gf').files[0]; if (!/^[A-Za-z]/.test(w)) return alert('Nama benda harus diawali huruf A sampai Z.'); if (!em && !f) return alert('Isi emoji atau pilih foto.'); const id = ref('game/items').push().key; await ref('game/items/' + id).set({ word: w, emoji: em, order: Date.now(), photoV: 0 }); if (f) pic(f, url => db.ref('photos/g_' + id).set(url).then(() => ref('game/items/' + id + '/photoV').set(Date.now()))) }
+      else if (a === 'gdel') { if (confirm('Hapus gambar ini?')) { ref('game/items/' + d.id).remove(); db.ref('photos/g_' + d.id).remove() } }
+      else if (a === 'clean') { const cut = ds(new Date(Date.now() - 60 * 864e5)), u = {}; let n = 0;['scores', 'praise'].forEach(p => Object.keys(A[p] || {}).forEach(k => Object.keys(A[p][k]).forEach(x => { if (x < cut) { u[p + '/' + k + '/' + x] = null; n++ } }))); if (n) await ref('').update(u); alert(n + ' data lama dibersihkan.') }
+    };
 
-$('fbon').onchange=e=>{const t=e.target,d=t.dataset,td=ds(new Date());
- if(t.id==='dd'){day0=t.value||td;R()}
- else if(d.pr){const v=t.value.trim(),p=ref(`praise/${d.pr}/${day0}`);v?p.set(v):p.remove();if(v&&day0===td)ref('events/last').set({kid:d.pr,stars:0,ts:TS(),text:`${A.kids[d.pr].name}, ${v}`})}
- else if(d.kn)ref('kids/'+d.kn+'/name').set(t.value.trim()||'Anak');
- else if(d.kc)ref('kids/'+d.kc+'/active').set(t.checked);
- else if(d.kf){const f=t.files[0],id=d.kf;if(f)pic(f,url=>{db.ref('photos/'+id).set(url).then(()=>ref('kids/'+id+'/photoV').set(Date.now()))})}
- else if(d.ai)ref('activities/'+d.ai+'/icon').set(t.value);
- else if(d.an)ref('activities/'+d.an+'/name').set(t.value.trim()||'Kegiatan');
- else if(d.am)ref('activities/'+d.am+'/max').set(+t.value);
- else if(d.ak){const a=A.activities[d.a];let cur=a.kids==='all'?Object.fromEntries(ls(A.kids).map(k=>[k.id,true])):{...(a.kids||{})};t.checked?cur[d.ak]=true:delete cur[d.ak];const all=ls(A.kids).every(k=>cur[k.id]);ref('activities/'+d.a+'/kids').set(all?'all':(Object.keys(cur).length?cur:null))}
- else if(t.id==='gdef')ref('game/useDefault').set(t.checked)
- else if(d.rt)ref('rewards/'+d.rt+'/title').set(t.value.trim()||'Hadiah');
- else if(d.rg)ref('rewards/'+d.rg+'/target').set(+t.value||1)};
-</script></body></html>
+    $('fbon').onchange = e => {
+      const t = e.target, d = t.dataset, td = ds(new Date());
+      if (t.id === 'dd') { day0 = t.value || td; R() }
+      else if (d.pr) { const v = t.value.trim(), p = ref(`praise/${d.pr}/${day0}`); v ? p.set(v) : p.remove(); if (v && day0 === td) ref('events/last').set({ kid: d.pr, stars: 0, ts: TS(), text: `${A.kids[d.pr].name}, ${v}` }) }
+      else if (d.kn) ref('kids/' + d.kn + '/name').set(t.value.trim() || 'Anak');
+      else if (d.kc) ref('kids/' + d.kc + '/active').set(t.checked);
+      else if (d.kf) { const f = t.files[0], id = d.kf; if (f) pic(f, url => { db.ref('photos/' + id).set(url).then(() => ref('kids/' + id + '/photoV').set(Date.now())) }) }
+      else if (d.ai) ref('activities/' + d.ai + '/icon').set(t.value);
+      else if (d.an) ref('activities/' + d.an + '/name').set(t.value.trim() || 'Kegiatan');
+      else if (d.am) ref('activities/' + d.am + '/max').set(+t.value);
+      else if (d.ak) { const a = A.activities[d.a]; let cur = a.kids === 'all' ? Object.fromEntries(ls(A.kids).map(k => [k.id, true])) : { ...(a.kids || {}) }; t.checked ? cur[d.ak] = true : delete cur[d.ak]; const all = ls(A.kids).every(k => cur[k.id]); ref('activities/' + d.a + '/kids').set(all ? 'all' : (Object.keys(cur).length ? cur : null)) }
+      else if (t.id === 'gdef') ref('game/useDefault').set(t.checked)
+      else if (d.rt) ref('rewards/' + d.rt + '/title').set(t.value.trim() || 'Hadiah');
+      else if (d.rg) ref('rewards/' + d.rg + '/target').set(+t.value || 1)
+    };
+  </script>
+</body>
+
+</html>
