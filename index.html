@@ -77,7 +77,7 @@ h1{font-size:4.2vh;margin:0 0 3vh;font-weight:700}
 .hint2{font-size:3vh;margin-top:2vh;opacity:.85}
 .tb2{background:#ffd23f;color:#1b1740;border-radius:2vh;padding:1.2vh 2vw;font-size:2.8vh;font-weight:700;margin:0 0 2.5vh}
 #hint{position:fixed;top:2vh;left:2vw;background:#000a;padding:.8vh 1.8vh;border-radius:1vh;font-size:2.4vh;z-index:9;display:none}
-.sv .st{pointer-events:none}.sv .b{position:relative;z-index:2;margin-bottom:1.5vh}
+.sv .st{pointer-events:none}.sv .b{position:relative;z-index:2;margin-bottom:1.5vh;margin-right:2vw}
 
 .gcat h2{font-size:3.6vh;margin:2vh 0 1.5vh}.f i.ar,.ar{font-family:"Noto Naskh Arabic","Traditional Arabic","Scheherazade New",serif}
 .gsc{min-height:100vh;margin:-4vh -5vw;padding:3vh 5vw;display:flex;flex-direction:column;align-items:center}
@@ -99,7 +99,7 @@ h1{font-size:4.2vh;margin:0 0 3vh;font-weight:700}
 <script src="firebase-config.js"></script>
 <script>
 const WARN=[10,5,1];
-let D={folders:[],settings:{mode:'off'},child:{},lock:{}},lastTxt='',lkT=null,lkKey='',view='welcome',fi=0,Q=[],qi=0,P=null,locked=false,tu=false,alO=[],vPrev=true,paused=false,fired={},actx=null;
+let D={folders:[],settings:{mode:'off'},child:{},lock:{}},lastTxt='',lkT=null,lkKey='',view='welcome',fi=0,Q=[],qi=0,P=null,locked=false,tu=false,mur=false,alO=[],vPrev=true,paused=false,fired={},actx=null;
 const $=s=>document.querySelector(s),day=()=>new Date().toDateString();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const J=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
@@ -117,6 +117,7 @@ function vstat(){const s=D.settings||{};
   if(n<st)return{ok:false,why:'before',at:s.start};if(n>=e)return{ok:false,why:'after'};return{ok:true,left:e-n}}
  if(s.mode==='duration'){const l=s.minutes*60-(U.sec||0);return l>0?{ok:true,left:l}:{ok:false,why:'after'}}
  return{ok:true,left:null}}
+const lim=()=>!mur||!!(A.murotalLimit);
 const vb=()=>{const v=vstat();return v.ok?'':'<p class="tb2">'+(v.why==='before'?'🕒 Belum waktunya nonton. Mulai jam '+v.at:'😴 Waktu nonton sudah habis. Video tidak bisa diputar.')+'</p>'};
 
 function tone(n,f){if(!actx)return;const t=actx.currentTime;for(let i=0;i<n;i++){const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f||740;g.gain.value=.25;o.connect(g);g.connect(actx.destination);o.start(t+i*.4);o.stop(t+i*.4+.25)}}
@@ -142,23 +143,23 @@ function scene(st,o){stop();show('#lk',1);$('#tm').style.display='none';$('#note
  else lkT=setTimeout(()=>say(say_),o.alarmOn&&st.why==='after'?10000:1500)}
 function lock(st){locked=true;tu=false;lkKey=st.why+'|'+(st.msg||'');scene(st,{loop:true,alarmOn:true})}
 function tuShow(vs,al){tu=true;scene(vs,{loop:false,alarmOn:al})}
-function dismissTU(){tu=false;unlock();show('#lk',0);$('#lk').className='';if(view==='play')view='videos';draw()}
+function dismissTU(){tu=false;unlock();show('#lk',0);$('#lk').className='';if(view==='play'){view=mur?'murotal':'videos';mur=false}draw()}
 const fmt=s=>s>=600?Math.ceil(s/60)+' menit':Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 
-setInterval(()=>{if(view==='play'&&!paused&&D.settings.mode==='duration'){U.sec=(U.sec||0)+1;sv()}
+setInterval(()=>{if(view==='play'&&!paused&&D.settings.mode==='duration'&&lim()){U.sec=(U.sec||0)+1;sv()}
  const st=status();
  if(!st.ok&&(!locked||lkKey!==st.why+'|'+(st.msg||'')))return lock(st);
  if(st.ok&&locked){locked=false;unlock();show('#lk',0);$('#lk').className='';view='folders';fired={};draw()}
  if(locked)return;
  const vs=vstat(),tm=$('#tm');
- if(!vs.ok&&view==='play'){view='videos';draw();tuShow(vs,true);return}
+ if(!vs.ok&&view==='play'&&lim()){view=mur?'murotal':'videos';mur=false;draw();tuShow(vs,true);return}
  if(vs.ok!==vPrev){vPrev=vs.ok;if(view==='videos')draw()}
- if(vs.ok&&vs.left!==null&&!tu&&view!=='game'){tm.textContent='⏳ '+fmt(vs.left);tm.style.display='block';
+ if(vs.ok&&vs.left!==null&&!tu&&view!=='game'&&lim()){tm.textContent='⏳ '+fmt(vs.left);tm.style.display='block';
   WARN.forEach(m=>{if(vs.left>m*60)fired[m]=0;else if(!fired[m]){fired[m]=1;if(vs.left>m*60-20&&view==='play')warn(m)}})}
  else tm.style.display='none'},1000);
 setInterval(load,20000);
 
-function draw(){const a=$('#app');if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='game'){drawGame();return}
+function draw(){const a=$('#app');if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='murotal'){drawMur();return}if(view==='game'){drawGame();return}
  if(view==='welcome'){const c=D.child||{};if(!c.name&&!c.photo){view='folders';return draw()}
   a.innerHTML=`<div class="wl">${c.photo?`<img class="ph" src="${c.photo}" alt="">`:''}<h1>Halo${c.name?', '+esc(c.name):''}!</h1><button class="c b" data-go>▶ Mulai</button></div>`}
  else if(view==='folders'){const L=J('last',null);let rs='';
@@ -172,15 +173,18 @@ $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const 
  else if(d.r){const[x,y]=d.r.split('.');fi=+x;play(+y)}
  else if(d.s!==undefined){view='stars';draw()}
  else if(d.pg!==undefined){view='games';draw()}
+ else if(d.mu!==undefined){view='murotal';draw()}
+ else if(d.mv!==undefined)playMur(+d.mv)
  else if(d.gm!==undefined)startGame(d.gm)
  else if(d.ch!==undefined)answer(+d.ch)
  else if(d.rp!==undefined){if(G)say(G.q.say)}
  else if(d.f!==undefined){fi=+d.f;view='videos';draw()}
  else if(d.v!==undefined)play(+d.v);else back()};
 
-function sl(){localStorage.setItem('last',JSON.stringify({f:fi,id:Q[qi].id}))}
-function play(i){const v=D.folders[fi].videos[i];if(locked||v.bad)return;audio();const vs=vstat();if(!vs.ok){tuShow(vs,false);return}Q=D.folders[fi].videos;qi=i;view='play';paused=false;show('#pl',1);sl();hint();
- if(P)P.loadVideoById(Q[qi].id);else if(window.YT&&YT.Player)mk();else{const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}}
+function sl(){if(mur)return;localStorage.setItem('last',JSON.stringify({f:fi,id:Q[qi].id}))}
+function play(i){const v=D.folders[fi].videos[i];if(locked||v.bad)return;audio();const vs=vstat();if(!vs.ok){tuShow(vs,false);return}mur=false;Q=D.folders[fi].videos;qi=i;view='play';paused=false;show('#pl',1);sl();hint();
+ go()}
+function go(){if(P)P.loadVideoById(Q[qi].id);else if(window.YT&&YT.Player)mk();else{const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}}
 function mk(){P=new YT.Player('player',{width:'100%',height:'100%',videoId:Q[qi].id,playerVars:{autoplay:1,controls:0,rel:0,disablekb:1,fs:0,iv_load_policy:3,playsinline:1},
  events:{onReady:e=>e.target.playVideo(),onStateChange:e=>{if(e.data===0)nx(1);if(e.data===1&&BAD.includes(Q[qi].id)){BAD=BAD.filter(x=>x!==Q[qi].id);localStorage.setItem('bad',JSON.stringify(BAD))}},
  onError:()=>{if(!BAD.includes(Q[qi].id)){BAD.push(Q[qi].id);localStorage.setItem('bad',JSON.stringify(BAD))}nx(1)}}})}
@@ -188,7 +192,7 @@ function onYouTubeIframeAPIReady(){if(view==='play')mk()}
 function nx(d){if(Q.every(isBad)){back();return}for(let k=0;k<Q.length;k++){qi=(qi+d+Q.length)%Q.length;if(!isBad(Q[qi]))break}P.loadVideoById(Q[qi].id);sl()}
 let hT=null;function hint(){const h=$('#hint');h.textContent='OK jeda  ·  ▲ kembali';h.style.display='block';clearTimeout(hT);hT=setTimeout(()=>h.style.display='none',6000)}
 function stop(){if(P&&P.stopVideo)P.stopVideo();show('#pl',0);$('#hint').style.display='none'}
-function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view='videos'}else if(view==='videos')view='folders';else if(view==='stars')view='folders';else if(view==='game'){exitGame();view='games'}else if(view==='games')view='folders';else return;draw()}
+function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view=mur?'murotal':'videos';mur=false}else if(view==='murotal')view='stars';else if(view==='videos')view='folders';else if(view==='stars')view='folders';else if(view==='game'){exitGame();view='games'}else if(view==='games')view='folders';else return;draw()}
 
 document.addEventListener('keydown',e=>{const k=e.key;audio();if(locked){e.preventDefault();return}
  if(tu){e.preventDefault();if(k==='Enter'||k===' '||k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4)dismissTU();return}
@@ -244,7 +248,7 @@ ${rw?`<div class="rw${done?' dn':''}"><div class="bar"><i style="width:${pct}%">
 
 function drawStars(){const a=$('#app'),ks=kidsOn(),t=ds(new Date());
  a.innerHTML='<div class="sv">'+Array.from({length:12},(_,i)=>`<span class="st" style="left:${(i*29+6)%94}%;top:${(i*47+8)%86}%;animation-delay:${(i%6)*.35}s">${i%3?'✨':'⭐'}</span>`).join('')+
- `<button class="c b" data-back>‹ Kembali</button><div class="stt">⭐ Bintang Hebat ⭐</div><div class="kg k${Math.min(ks.length,3)}">`+(ks.length?ks.map(k=>panel(k,t)).join(''):'<p>Belum ada anak. Tambahkan lewat halaman Admin.</p>')+'</div><div class="hint">Pilih ‹ Kembali lalu tekan OK</div></div>';
+ `<button class="c b" data-back>‹ Kembali</button>${murList().length?'<button class="c b" data-mu>🎧 Murotal</button>':''}<div class="stt">⭐ Bintang Hebat ⭐</div><div class="kg k${Math.min(ks.length,3)}">`+(ks.length?ks.map(k=>panel(k,t)).join(''):'<p>Belum ada anak. Tambahkan lewat halaman Admin.</p>')+'</div><div class="hint">Pilih ‹ Kembali lalu tekan OK</div></div>';
  a.querySelectorAll('.cnt').forEach(el=>{const n=+el.dataset.n;let i=0;const f=()=>{el.textContent=i;if(i<n){i++;setTimeout(f,Math.max(40,600/n))}};f()});const fb=a.querySelector('.c');if(fb)fb.focus()}
 
 function confetti(n){const o=$('#cf');o.innerHTML='';const em=['⭐','✨','🎉','🌟','💛'];for(let i=0;i<n;i++){const s=document.createElement('span');s.textContent=em[i%5];s.style.cssText=`left:${Math.random()*100}%;font-size:${3+Math.random()*4}vh;animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*1.2}s`;o.appendChild(s)}}
@@ -256,6 +260,15 @@ function cele(e){if(locked)return;const k=ls(A.kids).find(x=>x.id===e.kid);if(!k
  o.style.display='flex';confetti(70);fan();setTimeout(()=>say(e.text),900);setTimeout(()=>{o.style.display='none';$('#cf').innerHTML=''},7500)}
 /* BH-END */
 
+
+/* MUR-START: Murotal Al-Qur'an (link YouTube dari admin) */
+const murList=()=>ls(A.murotal).filter(x=>x.vid).map(x=>({id:x.vid,title:x.title||'Murotal'}));
+function drawMur(){const L=murList();$('#app').innerHTML='<button class="c b" data-back>‹ Kembali</button><h1>🎧 Murotal Al-Qur\'an</h1>'+(A.murotalLimit?vb():'')+'<div class="g">'+
+ (L.length?L.map((v,i)=>`<button class="c v" data-mv="${i}"><img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt=""><span>${esc(v.title)}</span>${BAD.includes(v.id)?'<em>⚠ Tidak bisa diputar</em>':''}</button>`).join(''):'<p>Belum ada murotal. Tambahkan lewat halaman Admin.</p>')+'</div>';
+ const f=document.querySelector('#app .c');if(f)f.focus()}
+function playMur(i){const L=murList();if(locked||!L[i])return;audio();const vs=vstat();if(A.murotalLimit&&!vs.ok){tuShow(vs,false);return}
+ mur=true;Q=L;qi=i;view='play';paused=false;show('#pl',1);hint();go()}
+/* MUR-END */
 /* GAME-START: Permainan belajar */
 const CATS=[{id:'abjad',t:'Abjad',i:'🔤',bg:'linear-gradient(135deg,#1d4ed8,#38bdf8)'},{id:'angka',t:'Angka',i:'🔢',bg:'linear-gradient(135deg,#c2410c,#fbbf24)'},{id:'hij',t:'Huruf Hijaiyah',i:'🕌',bg:'linear-gradient(135deg,#065f46,#34d399)'}];
 const GAMES={abjad1:{cat:'abjad',t:'Dengar Huruf',i:'🔊'},abjad2:{cat:'abjad',t:'Huruf Awal',i:'🍎'},angka1:{cat:'angka',t:'Hitung Bintang',i:'⭐'},angka2:{cat:'angka',t:'Dengar Angka',i:'🔊'},hij1:{cat:'hij',t:'Kenali Huruf',i:'ب'}};
