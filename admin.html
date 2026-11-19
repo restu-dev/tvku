@@ -33,6 +33,9 @@ button.x{background:#b3261e;padding:6px 10px;min-height:38px}button.s{background
 <div class="r"><input class="w" id="fn" placeholder="Nama folder baru"><button id="fa">Buat folder</button><button class="s" id="ck">Periksa semua video</button></div>
 <div id="fl"></div></section></div>
 <div>
+<section><h2>Tampilan TV</h2>
+<div class="r"><label class="chk"><input type="checkbox" id="glite"> Mode hemat (kurangi animasi, untuk TV yang lambat)</label></div>
+<small id="gln"></small></section>
 <section><h2>Kunci TV</h2>
 <button id="lkb" class="lkb off"></button>
 <div class="r"><textarea id="lkm" rows="3" placeholder="Pesan di layar TV, misalnya: Waktunya makan siang"></textarea></div>
@@ -96,6 +99,7 @@ const PRE=['Waktunya makan','Waktunya tidur','Waktunya mandi','Waktunya belajar'
 $('chips').innerHTML=PRE.map(x=>`<button class="chip" data-p="${x}">${x}</button>`).join('');
 $('chips').onclick=e=>{const p=e.target.dataset.p;if(p){$('lkm').value=p;D.lock.msg=p;dirty()}};
 const fbReady=()=>FBOK&&db&&auth&&auth.currentUser;
+$('glite').onchange=()=>{if(!fbReady()){alert('Masuk dulu ke Firebase di tab ⭐ Penilaian agar pengaturan ini tersimpan.');$('glite').checked=!!(A&&A.lite);tab(2);return}ref('lite').set($('glite').checked)};
 $('lkb').onclick=()=>{if(FBOK){if(!fbReady()){alert('Masuk dulu ke Firebase di tab ⭐ Penilaian agar kunci real-time bekerja.');tab(2);return}ref('lock').set({on:!(A.lock&&A.lock.on),msg:$('lkm').value.trim(),speak:$('lks').checked,ts:TS()});return}
  D.lock.on=!D.lock.on;D.lock.msg=$('lkm').value.trim();D.lock.speak=$('lks').checked;ui();dirty();$('sv').click()};
 $('lkm').onchange=()=>{if(FBOK){if(fbReady())ref('lock/msg').set($('lkm').value.trim());return}D.lock.msg=$('lkm').value.trim();dirty()};
@@ -151,7 +155,8 @@ const ref=p=>db.ref('app/'+p),TS=()=>firebase.database.ServerValue.TIMESTAMP;
 const ava=k=>{const p=PH[k.id];return p?`<img class="avt" src="${p}" alt="">`:`<span class="avt">${esc((k.name||'?')[0])}</span>`};
 day0=ds(new Date());
 
-function lkUI(){const L=FBOK?(A.lock||{}):D.lock;$('lkb').className='lkb '+(L.on?'on':'off');$('lkb').textContent=L.on?'🔒 TV DIKUNCI. Tekan untuk membuka':'🔓 TV tidak dikunci. Tekan untuk mengunci';
+function lkUI(){$('glite').checked=!!(FBOK&&A.lite);$('glite').disabled=!FBOK;$('gln').textContent=FBOK?(auth&&auth.currentUser?'Berlaku di TV dalam beberapa detik.':'Masuk Firebase di tab ⭐ Penilaian agar pengaturan ini tersimpan.'):'Perlu Firebase (lihat PANDUAN-FIREBASE.md).';
+ const L=FBOK?(A.lock||{}):D.lock;$('lkb').className='lkb '+(L.on?'on':'off');$('lkb').textContent=L.on?'🔒 TV DIKUNCI. Tekan untuk membuka':'🔓 TV tidak dikunci. Tekan untuk mengunci';
  if(document.activeElement!==$('lkm'))$('lkm').value=L.msg||'';$('lks').checked=L.speak!==false;
  $('lkn').textContent=FBOK?(auth&&auth.currentUser?'Real-time lewat Firebase: TV terkunci dalam beberapa detik. Perubahan pesan langsung terkirim.':'Masuk Firebase di tab ⭐ Penilaian agar kunci bekerja real-time.'):'Tombol kunci menyimpan ke GitHub. TV menerima dalam sekitar 1-3 menit.'}
 function tab(n){$('pv1').hidden=n!==1;$('pv2').hidden=n!==2;$('t1').className='tb'+(n===1?' on':'');$('t2').className='tb'+(n===2?' on':'');$('bar').hidden=n!==1;if(n===2)fbStart()}
@@ -194,7 +199,8 @@ function rTq(){const its=ls(A.murotal);$('tq').innerHTML=`<h2>Murotal Al-Qur'an<
 function rTgx(g){const au=g.audio||{};return `<h2>Permainan Angka</h2><div class="r"><label class="chk"><input type="checkbox" id="gn1"${g.num1===false?'':' checked'}> Angka 1 sampai 10</label><label class="chk"><input type="checkbox" id="gn2"${g.num2?' checked':''}> Angka 11 sampai 20</label></div><small>Soal di TV memakai rentang yang dicentang (boleh keduanya).</small>
  <h2 style="margin-top:18px">Suara huruf hijaiyah</h2><small>Unggah MP3 pendek (1-3 detik, maksimal 250 KB) berisi lafal tiap huruf. Huruf tanpa file memakai suara mesin.</small>`+
  HJN.map((n,i)=>`<div class="v"><span><b style="font-size:24px">${HJG[i]}</b> ${n} ${au[i]?'✓':''}</span><div>${au[i]?`<button class="m" data-act="aplay" data-i="${i}">▶</button>`:''}<input type="file" accept="audio/*" data-af="${i}" style="max-width:140px">${au[i]?`<button class="x" data-act="adelau" data-i="${i}">✕</button>`:''}</div></div>`).join('')+
- `<h2 style="margin-top:18px">Tampilan TV</h2><div class="r"><label class="chk"><input type="checkbox" id="glite"${A.lite?' checked':''}> Mode hemat (kurangi animasi, untuk TV yang lambat)</label></div><hr style="border:0;border-top:1px solid #ddd;margin:16px 0">`}
+
+ `<hr style="border:0;border-top:1px solid #ddd;margin:16px 0">`}
 function rTg(){const g=A.game||{},its=ls(g.items);$('tg').innerHTML=rTgx(g)+`<h2>Gambar untuk permainan Huruf Awal</h2><small>Anak melihat gambar dan memilih huruf awal nama bendanya. Tersedia 24 gambar bawaan (huruf A sampai W dan Z). Tambahkan gambar sendiri di bawah, misalnya foto benda atau anggota keluarga.</small>
  <div class="r"><label class="chk"><input type="checkbox" id="gdef"${g.useDefault===false?'':' checked'}> Pakai gambar bawaan</label></div>
  <div class="r"><input class="w" id="gw" placeholder="Nama benda, misalnya Xilofon"><input id="ge" placeholder="Emoji (opsional)" style="width:140px"></div>
@@ -243,7 +249,6 @@ $('fbon').onchange=e=>{const t=e.target,d=t.dataset,td=ds(new Date());
  else if(t.id==='gdef')ref('game/useDefault').set(t.checked)
  else if(t.id==='gn1')ref('game/num1').set(t.checked)
  else if(t.id==='gn2')ref('game/num2').set(t.checked)
- else if(t.id==='glite')ref('lite').set(t.checked)
  else if(d.af!==undefined){const f=t.files[0],ix=d.af;if(!f)return;if(f.size>250*1024){t.value='';return alert('File terlalu besar (maksimal 250 KB). Gunakan MP3 pendek.')}const fr=new FileReader();fr.onload=()=>{let u=fr.result;if(!/^data:audio/.test(u))u=u.replace(/^data:[^;]*;/,'data:audio/mpeg;');db.ref('photos/a_'+ix).set(u).then(()=>ref('game/audio/'+ix).set(Date.now()))};fr.readAsDataURL(f)}
  else if(d.rt)ref('rewards/'+d.rt+'/title').set(t.value.trim()||'Hadiah');
  else if(d.rg)ref('rewards/'+d.rg+'/target').set(+t.value||1)};
