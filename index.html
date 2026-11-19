@@ -95,10 +95,13 @@ h1{font-size:4.2vh;margin:0 0 3vh;font-weight:700}
 #mwp,#mp{width:max(22vh,200px);height:max(22vh,200px)}#mp iframe{width:100%;height:100%;border-radius:1.2vh}
 #mt{font-size:2.2vh;margin-top:.8vh;line-height:1.25;max-height:7vh;overflow:hidden}
 .sv.mu{padding-right:max(27vh,230px)}.sv.mu .kg{zoom:.82}
+#pc{position:fixed;left:50%;bottom:4vh;transform:translateX(-50%);z-index:8;display:none;gap:3vw}
+#pc .c{padding:1.6vh 3vw;font-size:3vh;font-weight:700;background:#000c;text-align:center}
+body.lite .st{display:none}body.lite *{animation:none!important;transition:none!important}
 </style></head><body>
 <div id="app"></div>
 <div id="pl"><div id="player"></div><div id="sh"></div></div>
-<div id="note"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div><div id="hint"></div><div id="mw"><div id="mwp"><div id="mp"></div></div><div id="mt">🎧 Murotal</div></div>
+<div id="note"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div><div id="hint"></div><div id="pc"><button class="c pc pp">⏸ Jeda</button><button class="c pc pb">‹ Kembali</button></div><div id="mw"><div id="mwp"><div id="mp"></div></div><div id="mt">🎧 Murotal</div></div>
 <div id="lk"></div>
 <script src="firebase-config.js"></script>
 <script>
@@ -140,7 +143,7 @@ function scene(st,o){stop();show('#lk',1);$('#tm').style.display='none';$('#note
  let cls,deco,hero,bub,sub,row='',say_;
  if(man){cls='m';deco=stars('🎈',8);hero='🦉';bub=esc(st.msg);sub='Pesan dari orang tua 💌';say_=st.msg}
  else if(bf){cls='b';deco=stars('☁️',7);hero='🐥';bub='Belum waktunya nonton';sub='Nonton mulai jam '+st.at+(nm?', '+esc(nm):'');row='<span>🕒</span><span>'+st.at+'</span>';say_='Belum waktunya nonton. Nonton mulai jam '+st.at}
- else{cls='a';deco=stars('⭐',14)+stars('✨',4);hero='🧸<span class="wave">👋</span>';bub='Waktu nonton sudah habis!';sub='Yuk, TV-nya istirahat dulu. Sampai jumpa besok'+(nm?', '+esc(nm):'')+'!';row='<span>📺</span><span>➡️</span><span>😴</span>';say_='Waktu nonton sudah habis. Yuk, TV nya istirahat dulu. Sampai jumpa besok'+(nm?', '+nm:'')+'!'}
+ else{cls='a';deco=stars('⭐',10)+stars('✨',3);hero='🧸<span class="wave">👋</span>';bub='Waktu nonton sudah habis!';sub='Yuk, TV-nya istirahat dulu. Sampai jumpa besok'+(nm?', '+esc(nm):'')+'!';row='<span>📺</span><span>➡️</span><span>😴</span>';say_='Waktu nonton sudah habis. Yuk, TV nya istirahat dulu. Sampai jumpa besok'+(nm?', '+nm:'')+'!'}
  L.className=cls;L.innerHTML=deco+`<div class="hero">${hero}</div><div class="bub">${bub}</div><div class="sub">${sub}</div><div class="row">${row}</div>`+(tu?'<div class="hint2">Tekan OK untuk kembali ⏎</div>':'');
  unlock();if(o.alarmOn){if(st.why==='after')alarm();else tone(man?3:2,man?660:740)}
  if(o.loop){if(!man||lk().speak!==false){const loop=()=>{say(say_);lkT=setTimeout(loop,30000)};lkT=setTimeout(loop,1500)}}
@@ -180,7 +183,7 @@ $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const 
  else if(d.mt!==undefined){mwPaused=!mwPaused;mwPaused?mwHold():mwRes();drawStars()}
  else if(d.gm!==undefined)startGame(d.gm)
  else if(d.ch!==undefined)answer(+d.ch)
- else if(d.rp!==undefined){if(G)say(G.q.say)}
+ else if(d.rp!==undefined){if(G)sayQ(G.q)}
  else if(d.f!==undefined){fi=+d.f;view='videos';draw()}
  else if(d.v!==undefined)play(+d.v);else back()};
 
@@ -193,26 +196,35 @@ function mk(){P=new YT.Player('player',{width:'100%',height:'100%',videoId:Q[qi]
  onError:()=>{if(!BAD.includes(Q[qi].id)){BAD.push(Q[qi].id);localStorage.setItem('bad',JSON.stringify(BAD))}nx(1)}}})}
 function onYouTubeIframeAPIReady(){if(view==='play')mk();if(mwWant)mkM()}
 function nx(d){if(Q.every(isBad)){back();return}for(let k=0;k<Q.length;k++){qi=(qi+d+Q.length)%Q.length;if(!isBad(Q[qi]))break}P.loadVideoById(Q[qi].id);sl()}
-let hT=null;function hint(){const h=$('#hint');h.textContent='OK jeda  ·  ▲ kembali';h.style.display='block';clearTimeout(hT);hT=setTimeout(()=>h.style.display='none',6000)}
-function stop(){if(P&&P.stopVideo)P.stopVideo();show('#pl',0);mwOff();$('#hint').style.display='none'}
+let hT=null;
+function pcHide(){clearTimeout(hT);const p=$('#pc');if(p)p.style.display='none';try{if(document.activeElement&&document.activeElement.classList.contains('pc'))document.activeElement.blur()}catch(e){}}
+function pcTimer(){clearTimeout(hT);hT=setTimeout(pcHide,7000)}
+function pcShow(){const p=$('#pc'),b=p.querySelector('.pp');p.style.display='flex';b.textContent=paused?'▶ Lanjut':'⏸ Jeda';b.focus();pcTimer()}
+function hint(){pcShow()}
+function stop(){if(P&&P.stopVideo)P.stopVideo();show('#pl',0);mwOff();pcHide()}
 function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view=mur?'murotal':'videos';mur=false}else if(view==='murotal')view='stars';else if(view==='videos')view='folders';else if(view==='stars')view='folders';else if(view==='game'){exitGame();view='games'}else if(view==='games')view='folders';else return;draw()}
 
-document.addEventListener('keydown',e=>{const k=e.key;audio();if(locked){e.preventDefault();return}
- if(tu){e.preventDefault();if(k==='Enter'||k===' '||k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4)dismissTU();return}
- if(k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4){e.preventDefault();back();return}
- if(view==='play'){if(k==='ArrowUp')back();else if(k==='ArrowDown')hint();else if(k==='Enter'||k===' '){paused=!paused;paused?P.pauseVideo():P.playVideo()}e.preventDefault();return}
+const isBackKey=e=>{const k=e.key;return k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4||e.keyCode===27};
+document.addEventListener('keydown',e=>{const k=e.key;audio();if(isBackKey(e)){e.preventDefault();return}
+ if(locked){e.preventDefault();return}
+ if(tu){e.preventDefault();if(k==='Enter'||k===' ')dismissTU();return}
+ if(view==='play'){pcKey(e);return}
  if(k.startsWith('Arrow')){e.preventDefault();nav(k)}});
+function pcKey(e){const k=e.key;if($('#pc').style.display!=='flex'){e.preventDefault();pcShow();return}
+ if(k.startsWith('Arrow')){e.preventDefault();const b=[...document.querySelectorAll('#pc .pc')],i=b.indexOf(document.activeElement);b[(i+(k==='ArrowRight'||k==='ArrowDown'?1:-1)+b.length)%b.length].focus();pcTimer()}
+ else if(k==='Enter'||k===' ')pcTimer()}
 function nav(k){const c=[...document.querySelectorAll('.c')],a=document.activeElement,r=a.getBoundingClientRect();let b=null,bd=1e9;
  c.forEach(e=>{if(e===a)return;const q=e.getBoundingClientRect(),dx=q.left-r.left,dy=q.top-r.top;let p,s;
   if(k==='ArrowRight'){if(dx<=5)return;p=dx;s=Math.abs(dy)}else if(k==='ArrowLeft'){if(dx>=-5)return;p=-dx;s=Math.abs(dy)}
   else if(k==='ArrowDown'){if(dy<=5)return;p=dy;s=Math.abs(dx)}else{if(dy>=-5)return;p=-dy;s=Math.abs(dx)}
   const d=p+s*3;if(d<bd){bd=d;b=e}});if(b){b.focus();b.scrollIntoView({block:'center'})}}
+$('#pc').onclick=e=>{const b=e.target.closest('.pc');if(!b)return;audio();if(b.classList.contains('pp')){paused=!paused;paused?P.pauseVideo():P.playVideo();b.textContent=paused?'▶ Lanjut':'⏸ Jeda';pcTimer()}else{pcHide();back()}};
 $('#lk').onclick=()=>{audio();if(tu)dismissTU()};
 $('#sh').onclick=()=>{paused=!paused;paused?P.pauseVideo():P.playVideo()};
 
 /* BH-START: Bintang Hebat (Firebase Realtime Database) */
 const DB=((window.FBC&&FBC.databaseURL)||'').replace(/\/$/,''),FB_ON=!!DB&&!/ISI/.test(DB);
-let A=J('kb',{}),PH=J('kp',{}),PS={},seenTs=null,pT=null,hadKids=false;
+let A=J('kb',{}),PH=J('kp',{}),lastA='',PS={},seenTs=null,pT=null,hadKids=false;
 const pad=n=>String(n).padStart(2,'0'),ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const monday=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-(x.getDay()+6)%7);return x};
 const ls=o=>Object.entries(o||{}).map(([id,v])=>({id,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
@@ -225,11 +237,14 @@ const wdays=()=>{const m=monday(new Date());return Array.from({length:7},(_,i)=>
 const weekTot=k=>wdays().reduce((n,x)=>n+dayTot(k,ds(x)),0);
 const rewOf=k=>ls(A.rewards).find(r=>r.kid===k||r.kid==='all');
 
-async function pull(){if(!FB_ON)return;try{const r=await fetch(DB+'/app.json?_='+Date.now(),{cache:'no-store'});if(!r.ok)return;A=(await r.json())||{};localStorage.setItem('kb',JSON.stringify(A));
- for(const [pk,pv] of [...ls(A.kids).map(k=>[k.id,k.photoV]),...ls(A.game&&A.game.items).filter(x=>x.photoV).map(x=>['g_'+x.id,x.photoV])]){if(PH[pk]&&PH[pk].v===pv)continue;try{const p=await (await fetch(DB+'/photos/'+pk+'.json')).json();PH[pk]={v:pv,src:p||''}}catch(e){}}
- try{localStorage.setItem('kp',JSON.stringify(PH))}catch(e){}onData()}catch(e){}}
+async function pull(){if(!FB_ON)return;try{const r=await fetch(DB+'/app.json?_='+Date.now(),{cache:'no-store'});if(!r.ok)return;const x=await r.text();let ch=x!==lastA;if(ch){lastA=x;A=JSON.parse(x)||{};try{localStorage.setItem('kb',x)}catch(e){}}
+ for(const [pk,pv] of [...ls(A.kids).map(k=>[k.id,k.photoV]),...ls(A.game&&A.game.items).filter(x=>x.photoV).map(x=>['g_'+x.id,x.photoV])]){if(PH[pk]&&PH[pk].v===pv)continue;try{const p=await (await fetch(DB+'/photos/'+pk+'.json')).json();PH[pk]={v:pv,src:p||''};ch=true}catch(e){}}
+ try{localStorage.setItem('kp',JSON.stringify(PH))}catch(e){}
+ const au=(A.game&&A.game.audio)||{};for(const k in AU)if(!au[k])delete AU[k];
+ for(const [ai,av] of Object.entries(au)){if(AU[ai]&&AU[ai].v===av)continue;try{const p=await (await fetch(DB+'/photos/a_'+ai+'.json')).json();AU[ai]={v:av,src:p||''}}catch(e){}}
+ if(ch)onData()}catch(e){}}
 function conn(){if(!FB_ON||!window.EventSource)return;try{const es=new EventSource(DB+'/app.json'),h=()=>{clearTimeout(pT);pT=setTimeout(pull,300)};es.addEventListener('put',h);es.addEventListener('patch',h)}catch(e){}}
-function onData(){const e=A.events&&A.events.last;if(e&&e.ts){if(seenTs===null)seenTs=e.ts;else if(e.ts!==seenTs){seenTs=e.ts;cele(e)}}
+function onData(){document.body.classList.toggle('lite',!!A.lite);const e=A.events&&A.events.last;if(e&&e.ts){if(seenTs===null)seenTs=e.ts;else if(e.ts!==seenTs){seenTs=e.ts;cele(e)}}
  const hk=kidsOn().length>0;if(view==='stars')drawStars();
  else if(view==='folders'){if(hk!==hadKids){hadKids=hk;draw()}else{const el=document.querySelector('.sc');if(el)el.innerHTML=scTxt()}}}
 
@@ -250,7 +265,7 @@ ${rw?`<div class="rw${done?' dn':''}"><div class="bar"><i style="width:${pct}%">
 <div class="wk">${wk}</div>${pr?`<div class="pr">💬 ${esc(pr)}</div>`:''}</div>`}
 
 function drawStars(){const a=$('#app'),ks=kidsOn(),t=ds(new Date());
- a.innerHTML='<div class="sv'+(murList().length?' mu':'')+'">'+Array.from({length:12},(_,i)=>`<span class="st" style="left:${(i*29+6)%94}%;top:${(i*47+8)%86}%;animation-delay:${(i%6)*.35}s">${i%3?'✨':'⭐'}</span>`).join('')+
+ a.innerHTML='<div class="sv'+(murList().length?' mu':'')+'">'+Array.from({length:8},(_,i)=>`<span class="st" style="left:${(i*29+6)%94}%;top:${(i*47+8)%86}%;animation-delay:${(i%6)*.35}s">${i%3?'✨':'⭐'}</span>`).join('')+
  `<button class="c b" data-back>‹ Kembali</button>${murList().length?`<button class="c b" data-mt>${mwPaused?'▶':'⏸'} Murotal</button>`:''}<div class="stt">⭐ Bintang Hebat ⭐</div><div class="kg k${Math.min(ks.length,3)}">`+(ks.length?ks.map(k=>panel(k,t)).join(''):'<p>Belum ada anak. Tambahkan lewat halaman Admin.</p>')+'</div><div class="hint">Pilih ‹ Kembali lalu tekan OK</div></div>';
  a.querySelectorAll('.cnt').forEach(el=>{const n=+el.dataset.n;let i=0;const f=()=>{el.textContent=i;if(i<n){i++;setTimeout(f,Math.max(40,600/n))}};f()});const fb=a.querySelector('.c');if(fb)fb.focus();mwOn()}
 
@@ -260,7 +275,7 @@ function cele(e){if(locked)return;const k=ls(A.kids).find(x=>x.id===e.kid);if(!k
  if(view==='play'){const n=$('#note');n.textContent='⭐ '+(e.text||'Hebat!');n.style.display='block';fan();setTimeout(()=>n.style.display='none',6000);return}
  const ph=PH[k.id]&&PH[k.id].src,o=$('#ce');celeN++;mwHold();
  o.innerHTML=`<div class="cb">${ph?`<img class="pf big2" src="${ph}" alt="">`:''}<div class="bigst">${e.stars?'⭐'.repeat(Math.min(e.stars,3)):'💌'}</div><div class="ct">${esc(e.text||'Hebat!')}</div></div>`;
- o.style.display='flex';confetti(70);fan();setTimeout(()=>say(e.text),900);setTimeout(()=>{o.style.display='none';$('#cf').innerHTML='';celeN=Math.max(0,celeN-1);if(!celeN)mwRes()},7500)}
+ o.style.display='flex';confetti(45);fan();setTimeout(()=>say(e.text),900);setTimeout(()=>{o.style.display='none';$('#cf').innerHTML='';celeN=Math.max(0,celeN-1);if(!celeN)mwRes()},7500)}
 /* BH-END */
 
 
@@ -285,12 +300,13 @@ function mwRes(){if(view==='stars'&&!mwPaused&&!locked&&!celeN){try{if(PM&&PM.pl
 const CATS=[{id:'abjad',t:'Abjad',i:'🔤',bg:'linear-gradient(135deg,#1d4ed8,#38bdf8)'},{id:'angka',t:'Angka',i:'🔢',bg:'linear-gradient(135deg,#c2410c,#fbbf24)'},{id:'hij',t:'Huruf Hijaiyah',i:'🕌',bg:'linear-gradient(135deg,#065f46,#34d399)'}];
 const GAMES={abjad1:{cat:'abjad',t:'Dengar Huruf',i:'🔊'},abjad2:{cat:'abjad',t:'Huruf Awal',i:'🍎'},angka1:{cat:'angka',t:'Hitung Bintang',i:'⭐'},angka2:{cat:'angka',t:'Dengar Angka',i:'🔊'},hij1:{cat:'hij',t:'Kenali Huruf',i:'ب'}};
 const AN={A:'a',B:'be',C:'ce',D:'de',E:'e',F:'ef',G:'ge',H:'ha',I:'i',J:'je',K:'ka',L:'el',M:'em',N:'en',O:'o',P:'pe',Q:'ki',R:'er',S:'es',T:'te',U:'u',V:'ve',W:'we',X:'iks',Y:'ye',Z:'zet'};
-const NUMW=['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh'];
+const NUMW=['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas','dua belas','tiga belas','empat belas','lima belas','enam belas','tujuh belas','delapan belas','sembilan belas','dua puluh'];
 const HJ=[['ا','Alif'],['ب','Ba'],['ت','Ta'],['ث','Tsa'],['ج','Jim'],['ح','Ha'],['خ','Kho'],['د','Dal'],['ذ','Dzal'],['ر','Ra'],['ز','Zai'],['س','Sin'],['ش','Syin'],['ص','Shad'],['ض','Dhad'],['ط','Tha'],['ظ','Zha'],['ع','Ain'],['غ','Ghain'],['ف','Fa'],['ق','Qaf'],['ك','Kaf'],['ل','Lam'],['م','Mim'],['ن','Nun'],['و','Wau'],['ه','Ha'],['ي','Ya']];
 const WORDS=[['A','Apel','🍎'],['B','Bola','⚽'],['C','Cumi','🦑'],['D','Domba','🐑'],['E','Es krim','🍦'],['F','Foto','📷'],['G','Gajah','🐘'],['H','Harimau','🐯'],['I','Ikan','🐟'],['J','Jeruk','🍊'],['K','Kucing','🐱'],['L','Lebah','🐝'],['M','Mobil','🚗'],['N','Nanas','🍍'],['O','Ombak','🌊'],['P','Pisang','🍌'],['Q','Quran','📖'],['R','Rumah','🏠'],['S','Sapi','🐄'],['T','Topi','🎩'],['U','Ular','🐍'],['V','Vespa','🛵'],['W','Wortel','🥕'],['Z','Zebra','🦓']];
 const OBJ=[['🍎','apel'],['⭐','bintang'],['🎈','balon'],['🐟','ikan'],['🚗','mobil'],['🍪','kue'],['🐥','anak ayam']];
 const COL=['#e11d48','#7c3aed','#0d9488'],PRAISE=['Hebat','Pintar sekali','Keren','Yeay, bagus sekali','Wah, benar'],LET=Object.keys(AN),N10=[1,2,3,4,5,6,7,8,9,10];
-let G=null;
+const npool=()=>{const g=A.game||{},a=[];if(g.num1!==false)for(let i=1;i<=10;i++)a.push(i);if(g.num2)for(let i=11;i<=20;i++)a.push(i);return a.length?a:N10};
+let G=null,curAu=null;const AU={};
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const others=(pool,n,bad)=>shuf(pool.filter(x=>!bad(x))).slice(0,n);
@@ -300,33 +316,36 @@ function items(){const g=A.game||{},c=ls(g.items).map(x=>{const p=PH['g_'+x.id];
 function gen(id){
  if(id==='abjad2'){const it=rnd(items());if(it){const L=it.L,o=others(LET,2,x=>x===L);return{key:it.word,pic:it.pic,word:it.word,say:it.word+'. Huruf awalnya apa?',good:it.word+', huruf awalnya '+AN[L]+'.',ch:[L,...o].map((x,i)=>({ok:i===0,...lcard(x)}))}}id='abjad1'}
  if(id==='abjad1'){const L=rnd(LET),o=others(LET,2,x=>x===L);return{key:L,say:'Mana huruf '+AN[L]+'?',good:'Itu huruf '+AN[L]+'.',ch:[L,...o].map((x,i)=>({ok:i===0,...lcard(x)}))}}
- if(id==='angka1'){const n=rnd(N10),ob=rnd(OBJ),o=others(N10,2,x=>x===n);return{key:n+ob[0],count:n,emoji:ob[0],say:'Ada berapa '+ob[1]+'?',good:'Ada '+NUMW[n]+' '+ob[1]+'.',ch:[n,...o].map((x,i)=>({ok:i===0,...ncard(x)}))}}
- if(id==='angka2'){const n=rnd(N10),o=others(N10,2,x=>x===n);return{key:'n'+n,say:'Mana angka '+NUMW[n]+'?',good:'Itu angka '+NUMW[n]+'.',ch:[n,...o].map((x,i)=>({ok:i===0,...ncard(x)}))}}
- const a=rnd(HJ),o=others(HJ,2,x=>x[1]===a[1]);return{key:a[1],say:'Mana huruf '+a[1]+'?',good:'Itu huruf '+a[1]+'.',ch:[a,...o].map((x,i)=>({ok:i===0,h:`<span class="gg ar">${x[0]}</span>`}))}}
+ if(id==='angka1'){const P=npool(),n=rnd(P),ob=rnd(OBJ),o=others(P,2,x=>x===n);return{key:n+ob[0],count:n,emoji:ob[0],say:'Ada berapa '+ob[1]+'?',good:'Ada '+NUMW[n]+' '+ob[1]+'.',ch:[n,...o].map((x,i)=>({ok:i===0,...ncard(x)}))}}
+ if(id==='angka2'){const P=npool(),n=rnd(P),o=others(P,2,x=>x===n);return{key:'n'+n,say:'Mana angka '+NUMW[n]+'?',good:'Itu angka '+NUMW[n]+'.',ch:[n,...o].map((x,i)=>({ok:i===0,...ncard(x)}))}}
+ const a=rnd(HJ),o=others(HJ,2,x=>x[1]===a[1]);return{key:a[1],aud:HJ.indexOf(a),say:'Mana huruf '+a[1]+'?',good:'Itu huruf '+a[1]+'.',ch:[a,...o].map((x,i)=>({ok:i===0,h:`<span class="gg ar">${x[0]}</span>`}))}}
 function mkQ(id){let q;for(let t=0;t<6;t++){q=gen(id);if(!G||G.lastKey!==q.key)break}if(G)G.lastKey=q.key;q.ch=shuf(q.ch);return q}
 
+function playAu(i){try{if(curAu)curAu.pause();const x=AU[i];if(!x||!x.src)return false;curAu=new Audio(x.src);const p=curAu.play();if(p&&p.catch)p.catch(()=>{});return true}catch(e){return false}}
+const hasAu=q=>q.aud!=null&&AU[q.aud]&&AU[q.aud].src;
+function sayQ(q){if(hasAu(q))playAu(q.aud);else say(q.say)}
 function gameCard(){return '<button class="c f" style="--bg:linear-gradient(135deg,#3a86ff,#8338ec)" data-pg><i>🎮</i>Permainan<small>Abjad · Angka · Hijaiyah</small></button>'}
 function drawGames(){G=null;$('#app').innerHTML='<button class="c b" data-back>‹ Kembali</button><h1>🎮 Permainan</h1>'+CATS.map(c=>`<div class="gcat"><h2>${c.i} ${c.t}</h2><div class="g">`+Object.entries(GAMES).filter(([id,g])=>g.cat===c.id).map(([id,g])=>`<button class="c f" style="--bg:${c.bg}" data-gm="${id}"><i${id==='hij1'?' class="ar"':''}>${g.i}</i>${g.t}</button>`).join('')+'</div></div>').join('');
  const f=document.querySelector('#app .c.f');if(f)f.focus()}
 function drawGame(){const q=G.q,gm=GAMES[G.id],cat=CATS.find(c=>c.id===gm.cat);
  let st;
  if(q.pic)st=`<div class="pic">${q.pic}</div><div class="pw">${esc(q.word)}</div>`;
- else if(q.count){const s=q.count<=5?13:q.count<=8?10.5:9;st=`<div class="cnt2" style="font-size:${s}vh">${(q.emoji+' ').repeat(q.count)}</div>`}
+ else if(q.count){const c=q.count,s=c<=5?13:c<=10?10:c<=15?8:7,rows=[];for(let i=0;i<c;i+=5)rows.push((q.emoji+' ').repeat(Math.min(5,c-i)));st=`<div class="cnt2" style="font-size:${s}vh">${rows.join('<br>')}</div>`}
  else st='<div class="spk">🦉<span>🔊</span></div>';
  $('#app').innerHTML=`<div class="gsc" style="background:${cat.bg}"><div class="gtop"><button class="c b" data-back>‹ Kembali</button><div class="gt">${gm.i} ${gm.t}</div><button class="c b" data-rp>🔊 Ulangi</button></div><div class="gst">${st}</div><div class="chs">`+q.ch.map((c,i)=>`<button class="c ch" style="--cc:${COL[i]}" data-ch="${i}">${c.h}</button>`).join('')+'</div></div>';
  const f=document.querySelector('.ch');if(f)f.focus()}
 function startGame(id){G={id,wrong:0,tok:0,lastKey:null,lockIn:false};view='game';next()}
-function next(){G.wrong=0;G.lockIn=false;G.tok++;G.q=mkQ(G.id);drawGame();const tk=G.tok;setTimeout(()=>{if(G&&G.tok===tk&&view==='game')say(G.q.say)},500)}
+function next(){G.wrong=0;G.lockIn=false;G.tok++;G.q=mkQ(G.id);drawGame();const tk=G.tok;setTimeout(()=>{if(G&&G.tok===tk&&view==='game')sayQ(G.q)},500)}
 function answer(i){if(!G||G.lockIn||view!=='game')return;const c=G.q.ch[i];if(c.used)return;const bs=document.querySelectorAll('.ch');
  if(c.ok){G.lockIn=true;const nm=(D.child&&D.child.name)||'',p=rnd(PRAISE)+(nm&&Math.random()<.5?', '+nm:'')+'!',tk=G.tok,n=Math.max(1,3-G.wrong),o=$('#ce');
-  o.innerHTML=`<div class="cb"><div class="bigst">${'⭐'.repeat(n)}</div><div class="ct">${esc(p)}</div></div>`;o.style.display='flex';confetti(50);fan();say(p+' '+G.q.good);
+  o.innerHTML=`<div class="cb"><div class="bigst">${'⭐'.repeat(n)}</div><div class="ct">${esc(p)}</div></div>`;o.style.display='flex';confetti(35);fan();if(hasAu(G.q)){say(p);setTimeout(()=>{if(G&&G.tok===tk)playAu(G.q.aud)},1700)}else say(p+' '+G.q.good);
   setTimeout(()=>{if(!G||G.tok!==tk)return;o.style.display='none';$('#cf').innerHTML='';next()},4200)}
  else{c.used=true;G.wrong++;bs[i].classList.add('no');say(rnd(['Coba lagi ya','Belum tepat, coba lagi','Ayo coba lagi']));
   if(G.wrong>=2){const k=G.q.ch.findIndex(x=>x.ok);if(bs[k])bs[k].classList.add('hl')}
   const nf=[...bs].find((b,j)=>!G.q.ch[j].used);if(nf)nf.focus()}}
 function exitGame(){G=null;$('#ce').style.display='none';$('#cf').innerHTML=''}
 /* GAME-END */
-hadKids=ls(A.kids).length>0;if(FB_ON){pull();conn();setInterval(pull,30000)}
-for(let i=0;i<5;i++)history.pushState(null,'');addEventListener('popstate',()=>{history.pushState(null,'');back()});
+document.body.classList.toggle('lite',!!A.lite);hadKids=ls(A.kids).length>0;if(FB_ON){pull();conn();setInterval(pull,30000)}
+for(let i=0;i<5;i++)history.pushState(null,'');addEventListener('popstate',()=>{history.pushState(null,'')});
 load();
 </script></body></html>

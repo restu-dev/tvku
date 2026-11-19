@@ -145,7 +145,8 @@ const scOf=(k,d)=>(A.scores&&A.scores[k]&&A.scores[k][d])||{};
 const dayTot=(k,d)=>{const s=scOf(k,d);return acts(k).reduce((n,a)=>n+Math.min(+s[a.id]||0,a.max||3),0)};
 const wdays=()=>{const m=monday(new Date());return Array.from({length:7},(_,i)=>{const x=new Date(m);x.setDate(m.getDate()+i);return x})};
 const weekTot=k=>wdays().reduce((n,x)=>n+dayTot(k,ds(x)),0);
-const AIC=['🪥','🥦','🧸','📖','🕌','🛏️','🤝','🍽️','🚿','✏️','🧹','🥛','🎵','🏃'];
+const AIC=['🪥','🚿','🛁','🧼','🧴','🥦','🥕','🍎','🍌','🍽️','🥛','💧','🍚','🥗','🍞','🥚','🍊','🍉','🍇','🧸','🧹','🧺','👕','👟','🎒','🛏️','😴','🌙','⏰','📖','📚','✏️','🖍️','🎨','✂️','🧩','🎵','🎹','🎤','🕌','🤲','🙏','📿','☪️','🕋','🤝','❤️','💬','😊','🎁','🏃','⚽','🚲','🏊','🧘','🤸','🌳','🌻','🌱','🐱','🐶','🐟','🐔','🚰','🧻','🚽','🧽','🛒','📝','🔢','🔤','📏','🎬','🧃','🍪','🏠','🚗','👶','🙌','💪','⭐','🌟','🏆','🔔','🍳','🥣','🧊','🚶','🪑','🧦'];
+const HJN=['Alif','Ba','Ta','Tsa','Jim','Ha','Kho','Dal','Dzal','Ra','Zai','Sin','Syin','Shad','Dhad','Tha','Zha','Ain','Ghain','Fa','Qaf','Kaf','Lam','Mim','Nun','Wau','Ha','Ya'],HJG='ابتثجحخدذرزسشصضطظعغفقكلمنوهي';
 const ref=p=>db.ref('app/'+p),TS=()=>firebase.database.ServerValue.TIMESTAMP;
 const ava=k=>{const p=PH[k.id];return p?`<img class="avt" src="${p}" alt="">`:`<span class="avt">${esc((k.name||'?')[0])}</span>`};
 day0=ds(new Date());
@@ -176,8 +177,8 @@ function rTk(){$('tk').innerHTML='<h2>Anak</h2><div class="r"><input class="w" i
  <div class="r">${COLORS.map(c=>`<button class="sw${c===k.color?' on':''}" style="background:${c}" data-act="kcol" data-id="${k.id}" data-c="${c}" aria-label="Warna"></button>`).join('')}</div>
  <div class="r"><input type="file" accept="image/*" data-kf="${k.id}"><label class="chk"><input type="checkbox" data-kc="${k.id}"${k.active!==false?' checked':''}> Tampil di TV</label></div></div>`).join('')||none)}
 
-function rTa(){const ks=ls(A.kids);$('ta').innerHTML='<h2>Kegiatan</h2><div class="r"><input class="w" id="an" placeholder="Nama kegiatan, misalnya Sikat gigi"><select id="ai">'+AIC.map(x=>`<option>${x}</option>`).join('')+'</select><select id="am"><option>3</option><option>2</option><option>1</option></select><button data-act="aadd">Tambah</button></div><small>Angka di samping ikon = bintang maksimal per kegiatan.</small>'+
- (ls(A.activities).map(a=>`<div class="fo"><div class="fh"><select data-ai="${a.id}">${AIC.map(x=>`<option${x===a.icon?' selected':''}>${x}</option>`).join('')}</select><input class="w" data-an="${a.id}" value="${esc(a.name)}"><select data-am="${a.id}">${[3,2,1].map(n=>`<option${n===(a.max||3)?' selected':''}>${n}</option>`).join('')}</select>
+function rTa(){const ks=ls(A.kids);$('ta').innerHTML='<h2>Kegiatan</h2><div class="r"><input class="w" id="an" placeholder="Nama kegiatan, misalnya Sikat gigi"><select id="ai">'+AIC.map(x=>`<option>${x}</option>`).join('')+'</select><input id="aie" placeholder="atau ketik emoji" style="width:140px"><select id="am"><option>3</option><option>2</option><option>1</option></select><button data-act="aadd">Tambah</button></div><small>Angka di samping ikon = bintang maksimal per kegiatan.</small>'+
+ (ls(A.activities).map(a=>`<div class="fo"><div class="fh"><select data-ai="${a.id}">${(AIC.includes(a.icon)?AIC:[a.icon||'⭐',...AIC]).map(x=>`<option${x===a.icon?' selected':''}>${x}</option>`).join('')}</select><input data-aie="${a.id}" placeholder="emoji lain" style="width:84px"><input class="w" data-an="${a.id}" value="${esc(a.name)}"><select data-am="${a.id}">${[3,2,1].map(n=>`<option${n===(a.max||3)?' selected':''}>${n}</option>`).join('')}</select>
  <button class="m" data-act="aup" data-id="${a.id}">▲</button><button class="m" data-act="adn" data-id="${a.id}">▼</button><button class="x" data-act="adel" data-id="${a.id}">Hapus</button></div>
  <div class="r"><small>Untuk:</small>${ks.map(k=>`<label class="chk"><input type="checkbox" data-ak="${k.id}" data-a="${a.id}"${a.kids==='all'||(a.kids&&a.kids[k.id])?' checked':''}> ${esc(k.name)}</label>`).join('')}</div></div>`).join('')||none)}
 
@@ -190,7 +191,11 @@ function rTh(){const ks=ls(A.kids),L=['Sen','Sel','Rab','Kam','Jum','Sab','Min']
 function rTq(){const its=ls(A.murotal);$('tq').innerHTML=`<h2>Murotal Al-Qur'an</h2><small>Tempel link YouTube murotal. Murotal diputar otomatis dan berulang di layar Bintang Hebat, lalu berhenti sebentar saat Anda memberi penilaian (selama ucapan selamat), dan lanjut lagi sesudahnya.</small>
  <div class="r"><input class="w" id="ql" placeholder="Tempel link YouTube murotal"><button data-act="qadd">Tambah</button></div>`+
  (its.map(x=>`<div class="v"><span>🎧 ${esc(x.title||x.vid)}</span><div><button class="m" data-act="qup" data-id="${x.id}">▲</button><button class="m" data-act="qdn" data-id="${x.id}">▼</button><button class="x" data-act="qdel" data-id="${x.id}">✕</button></div></div>`).join('')||'<div class="v"><small>Belum ada murotal.</small></div>')}
-function rTg(){const g=A.game||{},its=ls(g.items);$('tg').innerHTML=`<h2>Gambar untuk permainan Huruf Awal</h2><small>Anak melihat gambar dan memilih huruf awal nama bendanya. Tersedia 24 gambar bawaan (huruf A sampai W dan Z). Tambahkan gambar sendiri di bawah, misalnya foto benda atau anggota keluarga.</small>
+function rTgx(g){const au=g.audio||{};return `<h2>Permainan Angka</h2><div class="r"><label class="chk"><input type="checkbox" id="gn1"${g.num1===false?'':' checked'}> Angka 1 sampai 10</label><label class="chk"><input type="checkbox" id="gn2"${g.num2?' checked':''}> Angka 11 sampai 20</label></div><small>Soal di TV memakai rentang yang dicentang (boleh keduanya).</small>
+ <h2 style="margin-top:18px">Suara huruf hijaiyah</h2><small>Unggah MP3 pendek (1-3 detik, maksimal 250 KB) berisi lafal tiap huruf. Huruf tanpa file memakai suara mesin.</small>`+
+ HJN.map((n,i)=>`<div class="v"><span><b style="font-size:24px">${HJG[i]}</b> ${n} ${au[i]?'✓':''}</span><div>${au[i]?`<button class="m" data-act="aplay" data-i="${i}">▶</button>`:''}<input type="file" accept="audio/*" data-af="${i}" style="max-width:140px">${au[i]?`<button class="x" data-act="adelau" data-i="${i}">✕</button>`:''}</div></div>`).join('')+
+ `<h2 style="margin-top:18px">Tampilan TV</h2><div class="r"><label class="chk"><input type="checkbox" id="glite"${A.lite?' checked':''}> Mode hemat (kurangi animasi, untuk TV yang lambat)</label></div><hr style="border:0;border-top:1px solid #ddd;margin:16px 0">`}
+function rTg(){const g=A.game||{},its=ls(g.items);$('tg').innerHTML=rTgx(g)+`<h2>Gambar untuk permainan Huruf Awal</h2><small>Anak melihat gambar dan memilih huruf awal nama bendanya. Tersedia 24 gambar bawaan (huruf A sampai W dan Z). Tambahkan gambar sendiri di bawah, misalnya foto benda atau anggota keluarga.</small>
  <div class="r"><label class="chk"><input type="checkbox" id="gdef"${g.useDefault===false?'':' checked'}> Pakai gambar bawaan</label></div>
  <div class="r"><input class="w" id="gw" placeholder="Nama benda, misalnya Xilofon"><input id="ge" placeholder="Emoji (opsional)" style="width:140px"></div>
  <div class="r"><input type="file" id="gf" accept="image/*"><button data-act="gadd">Tambah</button></div><small>Isi emoji atau pilih foto. Huruf awal diambil dari huruf pertama nama benda.</small>`+
@@ -209,7 +214,7 @@ $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;cons
  else if(a==='kup'||a==='kdn')mv('kids',K,d.id,a==='kup'?-1:1);
  else if(a==='kcol')ref('kids/'+d.id+'/color').set(d.c);
  else if(a==='kdel'){if(!confirm('Hapus anak ini beserta semua nilainya?'))return;const u={};u['kids/'+d.id]=null;u['scores/'+d.id]=null;u['praise/'+d.id]=null;ls(A.rewards).filter(r=>r.kid===d.id).forEach(r=>u['rewards/'+r.id]=null);await ref('').update(u);db.ref('photos/'+d.id).remove()}
- else if(a==='aadd'){const n=$('an').value.trim();if(!n)return;const id=ref('activities').push().key;ref('activities/'+id).set({name:n,icon:$('ai').value,max:+$('am').value,order:Date.now(),kids:'all'})}
+ else if(a==='aadd'){const n=$('an').value.trim();if(!n)return;const id=ref('activities').push().key;ref('activities/'+id).set({name:n,icon:Array.from($('aie').value.trim()).slice(0,6).join('')||$('ai').value,max:+$('am').value,order:Date.now(),kids:'all'})}
  else if(a==='aup'||a==='adn')mv('activities',AC,d.id,a==='aup'?-1:1);
  else if(a==='adel'){if(confirm('Hapus kegiatan ini?'))ref('activities/'+d.id).remove()}
  else if(a==='radd'){const t=$('rt').value.trim();if(!t)return;const id=ref('rewards').push().key;ref('rewards/'+id).set({kid:$('rk').value,title:t,icon:$('ri').value,target:+$('rg').value||20,order:Date.now()})}
@@ -218,6 +223,8 @@ $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;cons
  else if(a==='qadd'){const id=ytid($('ql').value.trim());if(!id)return alert('Link YouTube tidak dikenali.');let t='Murotal';try{const r=await oe(id);if(r.ok)t=(await r.json()).title}catch(x){}ref('murotal/'+ref('murotal').push().key).set({vid:id,title:t,order:Date.now()})}
  else if(a==='qup'||a==='qdn')mv('murotal',ls(A.murotal),d.id,a==='qup'?-1:1);
  else if(a==='qdel'){if(confirm('Hapus murotal ini?'))ref('murotal/'+d.id).remove()}
+ else if(a==='aplay'){const p=PH['a_'+d.i];if(p)new Audio(p).play()}
+ else if(a==='adelau'){if(confirm('Hapus suara huruf ini?')){ref('game/audio/'+d.i).remove();db.ref('photos/a_'+d.i).remove()}}
  else if(a==='gadd'){const w=$('gw').value.trim(),em=$('ge').value.trim(),f=$('gf').files[0];if(!/^[A-Za-z]/.test(w))return alert('Nama benda harus diawali huruf A sampai Z.');if(!em&&!f)return alert('Isi emoji atau pilih foto.');const id=ref('game/items').push().key;await ref('game/items/'+id).set({word:w,emoji:em,order:Date.now(),photoV:0});if(f)pic(f,url=>db.ref('photos/g_'+id).set(url).then(()=>ref('game/items/'+id+'/photoV').set(Date.now())))}
  else if(a==='gdel'){if(confirm('Hapus gambar ini?')){ref('game/items/'+d.id).remove();db.ref('photos/g_'+d.id).remove()}}
  else if(a==='clean'){const cut=ds(new Date(Date.now()-60*864e5)),u={};let n=0;['scores','praise'].forEach(p=>Object.keys(A[p]||{}).forEach(k=>Object.keys(A[p][k]).forEach(x=>{if(x<cut){u[p+'/'+k+'/'+x]=null;n++}})));if(n)await ref('').update(u);alert(n+' data lama dibersihkan.')}};
@@ -229,10 +236,15 @@ $('fbon').onchange=e=>{const t=e.target,d=t.dataset,td=ds(new Date());
  else if(d.kc)ref('kids/'+d.kc+'/active').set(t.checked);
  else if(d.kf){const f=t.files[0],id=d.kf;if(f)pic(f,url=>{db.ref('photos/'+id).set(url).then(()=>ref('kids/'+id+'/photoV').set(Date.now()))})}
  else if(d.ai)ref('activities/'+d.ai+'/icon').set(t.value);
+ else if(d.aie)ref('activities/'+d.aie+'/icon').set(Array.from(t.value.trim()).slice(0,6).join('')||'⭐');
  else if(d.an)ref('activities/'+d.an+'/name').set(t.value.trim()||'Kegiatan');
  else if(d.am)ref('activities/'+d.am+'/max').set(+t.value);
  else if(d.ak){const a=A.activities[d.a];let cur=a.kids==='all'?Object.fromEntries(ls(A.kids).map(k=>[k.id,true])):{...(a.kids||{})};t.checked?cur[d.ak]=true:delete cur[d.ak];const all=ls(A.kids).every(k=>cur[k.id]);ref('activities/'+d.a+'/kids').set(all?'all':(Object.keys(cur).length?cur:null))}
  else if(t.id==='gdef')ref('game/useDefault').set(t.checked)
+ else if(t.id==='gn1')ref('game/num1').set(t.checked)
+ else if(t.id==='gn2')ref('game/num2').set(t.checked)
+ else if(t.id==='glite')ref('lite').set(t.checked)
+ else if(d.af!==undefined){const f=t.files[0],ix=d.af;if(!f)return;if(f.size>250*1024){t.value='';return alert('File terlalu besar (maksimal 250 KB). Gunakan MP3 pendek.')}const fr=new FileReader();fr.onload=()=>{let u=fr.result;if(!/^data:audio/.test(u))u=u.replace(/^data:[^;]*;/,'data:audio/mpeg;');db.ref('photos/a_'+ix).set(u).then(()=>ref('game/audio/'+ix).set(Date.now()))};fr.readAsDataURL(f)}
  else if(d.rt)ref('rewards/'+d.rt+'/title').set(t.value.trim()||'Hadiah');
  else if(d.rg)ref('rewards/'+d.rg+'/target').set(+t.value||1)};
 </script></body></html>
