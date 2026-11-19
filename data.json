@@ -148,6 +148,17 @@
      "bad": false
     }
    ]
+  },
+  {
+   "name": "Edukasi",
+   "icon": "📁",
+   "color": "#7b2cbf",
+   "videos": [
+    {
+     "id": "QlrqUeiLNIs",
+     "title": "Kenapa Harus Membuang Sampah di Tempatnya? 🚮♻️ | Edukasi Anak Bahasa Indonesia"
+    }
+   ]
   }
  ],
  "child": {
