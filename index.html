@@ -133,11 +133,8 @@ function tone(n,f){if(!actx)return;const t=actx.currentTime;for(let i=0;i<n;i++)
 function alarm(){if(!actx)return;const N=[523,659,784,1047,784,659,523],t=actx.currentTime;for(let r=0;r<3;r++)N.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),s=t+r*3+i*.4;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.3,s);g.gain.exponentialRampToValueAtTime(.001,s+.38);o.connect(g);g.connect(actx.destination);o.start(s);o.stop(s+.4);alO.push(o)})}
 function warn(m){const n=$('#note');n.textContent='⏳ Sisa waktu '+m+' menit';n.style.display='block';tone(m===1?3:m===5?2:1);setTimeout(()=>n.style.display='none',7000)}
 function show(s,on){$(s).style.display=on?(s==='#lk'?'flex':'block'):'none'}
-/* Mode WallPanel: buka halaman dengan ?wp=1 (opsional &vol=NN untuk volume radio, 1-100, bawaan 70) */
 const WP=/[?&]wp=1/.test(location.search);
-const WPV=(()=>{const v=+new URLSearchParams(location.search).get('vol');return v>0&&v<=100?v:70})();
-function wpCmd(o){try{fetch('http://127.0.0.1:2971/api/command',{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(o)}).catch(()=>{})}catch(e){}}
-function wp(x){wpCmd({speak:x})}
+function wp(x){try{fetch('http://127.0.0.1:2971/api/command',{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({speak:x})}).catch(()=>{})}catch(e){}}
 function say(x){if(!x)return;if(WP){wp(x);return}
  try{if(window.fully&&typeof fully.textToSpeech==='function'){if(typeof fully.stopTextToSpeech==='function')fully.stopTextToSpeech();fully.textToSpeech(x,'id-ID');return}}catch(e){}
  try{const s=window.speechSynthesis;if(!s)return;s.cancel();const u=new SpeechSynthesisUtterance(x);u.lang='id-ID';u.rate=.85;const v=(s.getVoices()||[]).find(y=>/^id/i.test(y.lang));if(v)u.voice=v;s.speak(u)}catch(e){}}
@@ -286,7 +283,7 @@ function cele(e){if(locked)return;const k=ls(A.kids).find(x=>x.id===e.kid);if(!k
 const RADIO_DEF='http://streaming.an-nashihah.com:8822/index.html?sid=1';
 const murList=()=>ls(A.murotal).filter(x=>x.vid).map(x=>({id:x.vid,title:x.title||'Murotal'}));
 const murMode=()=>A.murotalOn===false?'off':A.murotalSource==='radio'?'radio':(murList().length?'yt':'off');
-let PM=null,mwKey='',mwMode='',mwPaused=false,mwWant=false,celeN=0,ytS=false,RA=null,raKey='',raI=0,raC=[],raT=null,wpKey='',wpV=null;
+let PM=null,mwKey='',mwMode='',mwPaused=false,mwWant=false,celeN=0,ytS=false,RA=null,raKey='',raI=0,raC=[],raT=null;
 function ytLoad(){if(window.YT&&YT.Player)return true;if(!ytS){ytS=true;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}return false}
 function mkM(){const L=murList();mwWant=false;if(PM||!L.length||!(window.YT&&YT.Player))return;
  PM=new YT.Player('mp',{width:'100%',height:'100%',videoId:L[0].id,playerVars:{autoplay:1,controls:0,disablekb:1,rel:0,fs:0,playsinline:1,iv_load_policy:3,loop:1,playlist:L.map(x=>x.id).join(',')},
@@ -295,17 +292,9 @@ function ytKill(){if(PM){try{PM.destroy()}catch(e){}PM=null;mwKey='';mwWant=fals
 function ytPause(){try{if(PM&&PM.pauseVideo)PM.pauseVideo()}catch(e){}}
 /* Radio: tautan halaman status SHOUTcast (.../index.html?sid=1) diubah menjadi alamat stream */
 function raCands(u){try{const x=new URL(u);if(/\.html?$/i.test(x.pathname)){const sid=x.searchParams.get('sid')||'1';return[x.origin+'/stream/'+sid+'/',x.origin+'/;',x.origin+'/;stream.mp3']}}catch(e){}return[u]}
-/* Radio lewat WallPanel (?wp=1): diputar oleh pemutar bawaan aplikasi (tidak kena blokir http di halaman https).
-   WallPanel tidak punya perintah berhenti, jadi "berhenti/jeda" dilakukan dengan volume 0. */
-function wpVol(v){if(wpV===v)return;wpV=v;wpCmd({volume:v})}
-function wpRadio(){const u=((A.radio||'')+'').trim()||RADIO_DEF,s=raCands(u).slice(-1)[0],off=mwPaused||celeN>0;
- if(wpKey!==s){wpKey=s;wpV=null;wpVol(off?0:WPV);wpCmd({audio:s});
-  setTimeout(()=>{wpV=null;wpVol((mwPaused||celeN>0||view!=='stars')?0:WPV)},1500);
-  $('#mt').textContent='📻 Radio (WallPanel)'}
- else wpVol(off?0:WPV)}
-function raStop(){clearTimeout(raT);if(WP&&wpKey)wpVol(0);if(RA){try{RA.onerror=null;RA.pause();RA.removeAttribute('src');RA.load()}catch(e){}RA=null}raKey=''}
+function raStop(){clearTimeout(raT);if(RA){try{RA.onerror=null;RA.pause();RA.removeAttribute('src');RA.load()}catch(e){}RA=null}raKey=''}
 function raPlay(){if(!RA)return;try{const p=RA.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
-function raOn(){if(WP){wpRadio();return}const u=((A.radio||'')+'').trim()||RADIO_DEF;
+function raOn(){const u=((A.radio||'')+'').trim()||RADIO_DEF;
  if(!RA||raKey!==u){raStop();raKey=u;raC=raCands(u);raI=0;RA=new Audio();RA.onplaying=()=>{$('#mt').textContent='📻 Radio'};
   RA.onerror=()=>{if(raI+1<raC.length){raI++;RA.src=raC[raI];raPlay()}else{$('#mt').textContent='📻 Radio tidak bisa diputar';clearTimeout(raT);raT=setTimeout(()=>{if(RA&&view==='stars'&&murMode()==='radio'){raI=0;RA.src=raC[0];raPlay()}},15000)}};
   RA.src=raC[0];$('#mt').textContent='📻 Memuat radio...'}
@@ -321,8 +310,8 @@ function mwOn(){const m=murMode();if(view!=='stars'||m==='off'){mwOff();return}
  if(!PM){if(ytLoad())mkM();else mwWant=true}
  else if(!mwPaused&&!celeN){try{const s=PM.getPlayerState();if(s!==1&&s!==3)PM.playVideo()}catch(e){}}}
 function mwOff(){const w=$('#mw');if(w)w.style.display='none';ytKill();raStop()}
-function mwHold(){ytPause();try{if(RA)RA.pause()}catch(e){}if(WP&&wpKey)wpVol(0)}
-function mwRes(){if(view==='stars'&&!mwPaused&&!locked&&!celeN){if(murMode()==='radio'){if(WP)wpVol(WPV);else if(RA){RA.src=raC[raI]||raC[0];raPlay()}}else{try{if(PM&&PM.playVideo)PM.playVideo()}catch(e){}}}}
+function mwHold(){ytPause();try{if(RA)RA.pause()}catch(e){}}
+function mwRes(){if(view==='stars'&&!mwPaused&&!locked&&!celeN){if(murMode()==='radio'){if(RA){RA.src=raC[raI]||raC[0];raPlay()}}else{try{if(PM&&PM.playVideo)PM.playVideo()}catch(e){}}}}
 /* MUR-END */
 /* GAME-START: Permainan belajar */
 const CATS=[{id:'abjad',t:'Abjad',i:'🔤',bg:'linear-gradient(135deg,#1d4ed8,#38bdf8)'},{id:'angka',t:'Angka',i:'🔢',bg:'linear-gradient(135deg,#c2410c,#fbbf24)'},{id:'hij',t:'Huruf Hijaiyah',i:'🕌',bg:'linear-gradient(135deg,#065f46,#34d399)'}];
