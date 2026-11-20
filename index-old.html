@@ -77,16 +77,37 @@ h1{font-size:4.2vh;margin:0 0 3vh;font-weight:700}
 .hint2{font-size:3vh;margin-top:2vh;opacity:.85}
 .tb2{background:#ffd23f;color:#1b1740;border-radius:2vh;padding:1.2vh 2vw;font-size:2.8vh;font-weight:700;margin:0 0 2.5vh}
 #hint{position:fixed;top:2vh;left:2vw;background:#000a;padding:.8vh 1.8vh;border-radius:1vh;font-size:2.4vh;z-index:9;display:none}
-.sv .st{pointer-events:none}.sv .b{position:relative;z-index:2;margin-bottom:1.5vh}
+.sv .st{pointer-events:none}.sv .b{position:relative;z-index:2;margin-bottom:1.5vh;margin-right:2vw}
+
+.gcat h2{font-size:3.6vh;margin:2vh 0 1.5vh}.f i.ar,.ar{font-family:"Noto Naskh Arabic","Traditional Arabic","Scheherazade New",serif}
+.gsc{min-height:100vh;margin:-4vh -5vw;padding:3vh 5vw;display:flex;flex-direction:column;align-items:center}
+.gtop{width:100%;display:flex;justify-content:space-between;align-items:center}.gtop .b{margin:0}.gt{font-size:4vh;font-weight:700}
+.gst{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:28vh}
+.pic{font-size:24vh;line-height:1.1;animation:bob 2s ease-in-out infinite}.pic img{width:28vh;height:28vh;object-fit:cover;border-radius:3vh;display:block}
+.pw{font-size:5vh;font-weight:700}
+.spk{font-size:19vh;animation:bob 1.6s ease-in-out infinite}.spk span{font-size:9vh}
+.cnt2{max-width:85vw;text-align:center;line-height:1.15}
+.chs{display:flex;gap:3vw;justify-content:center;margin:1vh 0 3vh;width:100%}
+.ch{flex:1;max-width:28vw;min-height:30vh;display:flex;align-items:center;justify-content:center;background:var(--cc);border-radius:4vh;font-size:19vh;font-weight:700;padding:0;text-align:center}
+.ch .gg{line-height:1.1}.ch.no{opacity:.25;filter:grayscale(1);transform:scale(.9)}
+.ch.hl{border-color:#ffd23f;animation:hp .6s infinite alternate}@keyframes hp{to{transform:scale(1.08)}}
+#mw{position:fixed;right:3vw;top:14vh;width:calc(max(22vh,200px) + 2vh);z-index:6;display:none;background:#000a;border-radius:2vh;padding:1vh;text-align:center}
+#mwp,#mp{width:max(22vh,200px);height:max(22vh,200px)}#mp iframe{width:100%;height:100%;border-radius:1.2vh}
+#mt{font-size:2.2vh;margin-top:.8vh;line-height:1.25;max-height:7vh;overflow:hidden}
+.sv.mu{padding-right:max(27vh,230px)}.sv.mu .kg{zoom:.82}
+#pc{position:fixed;left:50%;bottom:4vh;transform:translateX(-50%);z-index:8;display:none;gap:3vw}
+#pc .c{padding:1.6vh 3vw;font-size:3vh;font-weight:700;background:#000c;text-align:center}
+body.lite .st{display:none}body.lite *{animation:none!important;transition:none!important}
+#mw.rd{top:2vh;width:auto;max-width:36vh;padding:1vh 2.5vh;border-radius:5vh}
 </style></head><body>
 <div id="app"></div>
 <div id="pl"><div id="player"></div><div id="sh"></div></div>
-<div id="note"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div><div id="hint"></div>
+<div id="note"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div><div id="hint"></div><div id="pc"><button class="c pc pp">⏸ Jeda</button><button class="c pc pb">‹ Kembali</button></div><div id="mw"><div id="mwp"><div id="mp"></div></div><div id="mt">🎧 Murotal</div></div>
 <div id="lk"></div>
 <script src="firebase-config.js"></script>
 <script>
 const WARN=[10,5,1];
-let D={folders:[],settings:{mode:'off'},child:{},lock:{}},lastTxt='',lkT=null,lkKey='',view='welcome',fi=0,Q=[],qi=0,P=null,locked=false,tu=false,alO=[],vPrev=true,paused=false,fired={},actx=null;
+let D={folders:[],settings:{mode:'off'},child:{},lock:{}},lastTxt='',lkT=null,lkKey='',view='welcome',fi=0,Q=[],qi=0,P=null,locked=false,tu=false,mur=false,alO=[],vPrev=true,paused=false,fired={},actx=null;
 const $=s=>document.querySelector(s),day=()=>new Date().toDateString();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const J=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
@@ -95,7 +116,8 @@ const sv=()=>localStorage.setItem('u',JSON.stringify(U)),isBad=v=>v.bad||BAD.inc
 function audio(){if(!actx)try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}if(actx&&actx.state==='suspended')actx.resume()}
 function sync(){if(U.day!==day())U={day:day(),sec:0,reset:U.reset};if(U.reset!==D.settings.reset){U.reset=D.settings.reset;U.sec=0}sv()}
 
-async function load(){try{const r=await fetch('data.json?'+Date.now(),{cache:'no-store'}),x=await r.text();if(x!==lastTxt){lastTxt=x;D=JSON.parse(x);D.child=D.child||{};D.lock=D.lock||{};sync();if(view==='folders'||view==='welcome')draw()}}catch(e){if(!$('#app').innerHTML)$('#app').innerHTML='<h1>Gagal memuat data. Cek internet.</h1>'}}
+let ldN=0;
+async function load(){try{const bust=ldN++%10===0,r=await fetch(bust?'data.json?'+Date.now():'data.json',{cache:bust?'no-store':'no-cache'}),x=await r.text();if(x!==lastTxt){lastTxt=x;D=JSON.parse(x);D.child=D.child||{};D.lock=D.lock||{};sync();if(view==='folders'||view==='welcome')draw()}}catch(e){if(!$('#app').innerHTML)$('#app').innerHTML='<h1>Gagal memuat data. Cek internet.</h1>'}}
 
 function status(){const LK=lk();if(LK.on)return{ok:false,why:'manual',msg:(LK.msg||'').trim()||'TV sedang dikunci oleh orang tua'};return{ok:true}}
 /* Batas waktu: hanya berlaku untuk memutar video */
@@ -104,6 +126,7 @@ function vstat(){const s=D.settings||{};
   if(n<st)return{ok:false,why:'before',at:s.start};if(n>=e)return{ok:false,why:'after'};return{ok:true,left:e-n}}
  if(s.mode==='duration'){const l=s.minutes*60-(U.sec||0);return l>0?{ok:true,left:l}:{ok:false,why:'after'}}
  return{ok:true,left:null}}
+const lim=()=>!mur||!!(A.murotalLimit);
 const vb=()=>{const v=vstat();return v.ok?'':'<p class="tb2">'+(v.why==='before'?'🕒 Belum waktunya nonton. Mulai jam '+v.at:'😴 Waktu nonton sudah habis. Video tidak bisa diputar.')+'</p>'};
 
 function tone(n,f){if(!actx)return;const t=actx.currentTime;for(let i=0;i<n;i++){const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f||740;g.gain.value=.25;o.connect(g);g.connect(actx.destination);o.start(t+i*.4);o.stop(t+i*.4+.25)}}
@@ -122,35 +145,35 @@ function scene(st,o){stop();show('#lk',1);$('#tm').style.display='none';$('#note
  let cls,deco,hero,bub,sub,row='',say_;
  if(man){cls='m';deco=stars('🎈',8);hero='🦉';bub=esc(st.msg);sub='Pesan dari orang tua 💌';say_=st.msg}
  else if(bf){cls='b';deco=stars('☁️',7);hero='🐥';bub='Belum waktunya nonton';sub='Nonton mulai jam '+st.at+(nm?', '+esc(nm):'');row='<span>🕒</span><span>'+st.at+'</span>';say_='Belum waktunya nonton. Nonton mulai jam '+st.at}
- else{cls='a';deco=stars('⭐',14)+stars('✨',4);hero='🧸<span class="wave">👋</span>';bub='Waktu nonton sudah habis!';sub='Yuk, TV-nya istirahat dulu. Sampai jumpa besok'+(nm?', '+esc(nm):'')+'!';row='<span>📺</span><span>➡️</span><span>😴</span>';say_='Waktu nonton sudah habis. Yuk, TV nya istirahat dulu. Sampai jumpa besok'+(nm?', '+nm:'')+'!'}
+ else{cls='a';deco=stars('⭐',10)+stars('✨',3);hero='🧸<span class="wave">👋</span>';bub='Waktu nonton sudah habis!';sub='Yuk, TV-nya istirahat dulu. Sampai jumpa besok'+(nm?', '+esc(nm):'')+'!';row='<span>📺</span><span>➡️</span><span>😴</span>';say_='Waktu nonton sudah habis. Yuk, TV nya istirahat dulu. Sampai jumpa besok'+(nm?', '+nm:'')+'!'}
  L.className=cls;L.innerHTML=deco+`<div class="hero">${hero}</div><div class="bub">${bub}</div><div class="sub">${sub}</div><div class="row">${row}</div>`+(tu?'<div class="hint2">Tekan OK untuk kembali ⏎</div>':'');
  unlock();if(o.alarmOn){if(st.why==='after')alarm();else tone(man?3:2,man?660:740)}
  if(o.loop){if(!man||lk().speak!==false){const loop=()=>{say(say_);lkT=setTimeout(loop,30000)};lkT=setTimeout(loop,1500)}}
  else lkT=setTimeout(()=>say(say_),o.alarmOn&&st.why==='after'?10000:1500)}
 function lock(st){locked=true;tu=false;lkKey=st.why+'|'+(st.msg||'');scene(st,{loop:true,alarmOn:true})}
 function tuShow(vs,al){tu=true;scene(vs,{loop:false,alarmOn:al})}
-function dismissTU(){tu=false;unlock();show('#lk',0);$('#lk').className='';if(view==='play')view='videos';draw()}
+function dismissTU(){tu=false;unlock();show('#lk',0);$('#lk').className='';if(view==='play'){view=mur?'murotal':'videos';mur=false}draw()}
 const fmt=s=>s>=600?Math.ceil(s/60)+' menit':Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 
-setInterval(()=>{if(view==='play'&&!paused&&D.settings.mode==='duration'){U.sec=(U.sec||0)+1;sv()}
+setInterval(()=>{if(view==='play'&&!paused&&D.settings.mode==='duration'&&lim()){U.sec=(U.sec||0)+1;if(U.sec%10===0)sv()}
  const st=status();
  if(!st.ok&&(!locked||lkKey!==st.why+'|'+(st.msg||'')))return lock(st);
  if(st.ok&&locked){locked=false;unlock();show('#lk',0);$('#lk').className='';view='folders';fired={};draw()}
  if(locked)return;
  const vs=vstat(),tm=$('#tm');
- if(!vs.ok&&view==='play'){view='videos';draw();tuShow(vs,true);return}
+ if(!vs.ok&&view==='play'&&lim()){view=mur?'murotal':'videos';mur=false;draw();tuShow(vs,true);return}
  if(vs.ok!==vPrev){vPrev=vs.ok;if(view==='videos')draw()}
- if(vs.ok&&vs.left!==null&&!tu){tm.textContent='⏳ '+fmt(vs.left);tm.style.display='block';
+ if(vs.ok&&vs.left!==null&&!tu&&view!=='game'&&lim()){tm.textContent='⏳ '+fmt(vs.left);tm.style.display='block';
   WARN.forEach(m=>{if(vs.left>m*60)fired[m]=0;else if(!fired[m]){fired[m]=1;if(vs.left>m*60-20&&view==='play')warn(m)}})}
  else tm.style.display='none'},1000);
-setInterval(load,20000);
+let ldK=0;setInterval(()=>{if(ldK++%(FB_ON?3:1)===0)load()},20000);
 
-function draw(){const a=$('#app');if(view==='stars'){drawStars();return}
+function draw(){const a=$('#app');if(view!=='stars')mwOff();if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='game'){drawGame();return}
  if(view==='welcome'){const c=D.child||{};if(!c.name&&!c.photo){view='folders';return draw()}
   a.innerHTML=`<div class="wl">${c.photo?`<img class="ph" src="${c.photo}" alt="">`:''}<h1>Halo${c.name?', '+esc(c.name):''}!</h1><button class="c b" data-go>▶ Mulai</button></div>`}
  else if(view==='folders'){const L=J('last',null);let rs='';
   if(L&&D.folders[L.f]){const v=D.folders[L.f].videos.findIndex(x=>x.id===L.id);if(v>=0)rs=`<button class="c f rs" data-r="${L.f}.${v}">▶ Lanjutkan: ${esc(D.folders[L.f].videos[v].title)}</button>`}
-  a.innerHTML='<h1>Pilih folder</h1><div class="g">'+rs+starCard()+(D.folders.length?D.folders.map((f,i)=>`<button class="c f" style="--bg:${esc(f.color||'#2a2466')}" data-f="${i}"><i>${esc(f.icon||'📁')}</i>${esc(f.name)}<small>${f.videos.length} video</small></button>`).join(''):'<p>Belum ada folder. Tambahkan lewat halaman Admin.</p>')+'</div>'}
+  a.innerHTML='<h1>Pilih folder</h1><div class="g">'+rs+starCard()+gameCard()+(D.folders.length?D.folders.map((f,i)=>`<button class="c f" style="--bg:${esc(f.color||'#2a2466')}" data-f="${i}"><i>${esc(f.icon||'📁')}</i>${esc(f.name)}<small>${f.videos.length} video</small></button>`).join(''):'<p>Belum ada folder. Tambahkan lewat halaman Admin.</p>')+'</div>'}
  else{const f=D.folders[fi];a.innerHTML=`<button class="c b" data-back>‹ Kembali</button><h1>${esc(f.icon||'')} ${esc(f.name)}</h1>${vb()}<div class="g">`+f.videos.map((v,i)=>`<button class="c v${v.bad?' bad':''}" data-v="${i}"><img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt=""><span>${esc(v.title)}</span>${isBad(v)?'<em>⚠ Tidak bisa diputar</em>':''}</button>`).join('')+'</div>'}
  const first=a.querySelector('.c');if(first)first.focus()}
 
@@ -158,37 +181,52 @@ $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const 
  if(d.go!==undefined){view='folders';draw()}
  else if(d.r){const[x,y]=d.r.split('.');fi=+x;play(+y)}
  else if(d.s!==undefined){view='stars';draw()}
+ else if(d.pg!==undefined){view='games';draw()}
+ else if(d.mt!==undefined){mwPaused=!mwPaused;mwPaused?mwHold():mwRes();drawStars()}
+ else if(d.gm!==undefined)startGame(d.gm)
+ else if(d.ch!==undefined)answer(+d.ch)
+ else if(d.rp!==undefined){if(G)sayQ(G.q)}
  else if(d.f!==undefined){fi=+d.f;view='videos';draw()}
  else if(d.v!==undefined)play(+d.v);else back()};
 
-function sl(){localStorage.setItem('last',JSON.stringify({f:fi,id:Q[qi].id}))}
-function play(i){const v=D.folders[fi].videos[i];if(locked||v.bad)return;audio();const vs=vstat();if(!vs.ok){tuShow(vs,false);return}Q=D.folders[fi].videos;qi=i;view='play';paused=false;show('#pl',1);sl();hint();
- if(P)P.loadVideoById(Q[qi].id);else if(window.YT&&YT.Player)mk();else{const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}}
+function sl(){if(mur)return;localStorage.setItem('last',JSON.stringify({f:fi,id:Q[qi].id}))}
+function play(i){const v=D.folders[fi].videos[i];if(locked||v.bad)return;audio();const vs=vstat();if(!vs.ok){tuShow(vs,false);return}mur=false;Q=D.folders[fi].videos;qi=i;view='play';paused=false;show('#pl',1);sl();hint();
+ go()}
+function go(){if(P)P.loadVideoById(Q[qi].id);else if(ytLoad())mk()}
 function mk(){P=new YT.Player('player',{width:'100%',height:'100%',videoId:Q[qi].id,playerVars:{autoplay:1,controls:0,rel:0,disablekb:1,fs:0,iv_load_policy:3,playsinline:1},
  events:{onReady:e=>e.target.playVideo(),onStateChange:e=>{if(e.data===0)nx(1);if(e.data===1&&BAD.includes(Q[qi].id)){BAD=BAD.filter(x=>x!==Q[qi].id);localStorage.setItem('bad',JSON.stringify(BAD))}},
  onError:()=>{if(!BAD.includes(Q[qi].id)){BAD.push(Q[qi].id);localStorage.setItem('bad',JSON.stringify(BAD))}nx(1)}}})}
-function onYouTubeIframeAPIReady(){if(view==='play')mk()}
+function onYouTubeIframeAPIReady(){if(view==='play')mk();if(mwWant)mkM()}
 function nx(d){if(Q.every(isBad)){back();return}for(let k=0;k<Q.length;k++){qi=(qi+d+Q.length)%Q.length;if(!isBad(Q[qi]))break}P.loadVideoById(Q[qi].id);sl()}
-let hT=null;function hint(){const h=$('#hint');h.textContent='OK jeda  ·  ▲ kembali';h.style.display='block';clearTimeout(hT);hT=setTimeout(()=>h.style.display='none',6000)}
-function stop(){if(P&&P.stopVideo)P.stopVideo();show('#pl',0);$('#hint').style.display='none'}
-function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view='videos'}else if(view==='videos')view='folders';else if(view==='stars')view='folders';else return;draw()}
+let hT=null;
+function pcHide(){clearTimeout(hT);const p=$('#pc');if(p)p.style.display='none';try{if(document.activeElement&&document.activeElement.classList.contains('pc'))document.activeElement.blur()}catch(e){}}
+function pcTimer(){clearTimeout(hT);hT=setTimeout(pcHide,7000)}
+function pcShow(){const p=$('#pc'),b=p.querySelector('.pp');p.style.display='flex';b.textContent=paused?'▶ Lanjut':'⏸ Jeda';b.focus();pcTimer()}
+function hint(){pcShow()}
+function stop(){sv();if(P&&P.stopVideo)P.stopVideo();show('#pl',0);mwOff();pcHide()}
+function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view=mur?'murotal':'videos';mur=false}else if(view==='murotal')view='stars';else if(view==='videos')view='folders';else if(view==='stars')view='folders';else if(view==='game'){exitGame();view='games'}else if(view==='games')view='folders';else return;draw()}
 
-document.addEventListener('keydown',e=>{const k=e.key;audio();if(locked){e.preventDefault();return}
- if(tu){e.preventDefault();if(k==='Enter'||k===' '||k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4)dismissTU();return}
- if(k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4){e.preventDefault();back();return}
- if(view==='play'){if(k==='ArrowUp')back();else if(k==='ArrowDown')hint();else if(k==='Enter'||k===' '){paused=!paused;paused?P.pauseVideo():P.playVideo()}e.preventDefault();return}
+const isBackKey=e=>{const k=e.key;return k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4||e.keyCode===27};
+document.addEventListener('keydown',e=>{const k=e.key;audio();if(isBackKey(e)){e.preventDefault();return}
+ if(locked){e.preventDefault();return}
+ if(tu){e.preventDefault();if(k==='Enter'||k===' ')dismissTU();return}
+ if(view==='play'){pcKey(e);return}
  if(k.startsWith('Arrow')){e.preventDefault();nav(k)}});
+function pcKey(e){const k=e.key;if($('#pc').style.display!=='flex'){e.preventDefault();pcShow();return}
+ if(k.startsWith('Arrow')){e.preventDefault();const b=[...document.querySelectorAll('#pc .pc')],i=b.indexOf(document.activeElement);b[(i+(k==='ArrowRight'||k==='ArrowDown'?1:-1)+b.length)%b.length].focus();pcTimer()}
+ else if(k==='Enter'||k===' ')pcTimer()}
 function nav(k){const c=[...document.querySelectorAll('.c')],a=document.activeElement,r=a.getBoundingClientRect();let b=null,bd=1e9;
  c.forEach(e=>{if(e===a)return;const q=e.getBoundingClientRect(),dx=q.left-r.left,dy=q.top-r.top;let p,s;
   if(k==='ArrowRight'){if(dx<=5)return;p=dx;s=Math.abs(dy)}else if(k==='ArrowLeft'){if(dx>=-5)return;p=-dx;s=Math.abs(dy)}
   else if(k==='ArrowDown'){if(dy<=5)return;p=dy;s=Math.abs(dx)}else{if(dy>=-5)return;p=-dy;s=Math.abs(dx)}
   const d=p+s*3;if(d<bd){bd=d;b=e}});if(b){b.focus();b.scrollIntoView({block:'center'})}}
+$('#pc').onclick=e=>{const b=e.target.closest('.pc');if(!b)return;audio();if(b.classList.contains('pp')){paused=!paused;paused?P.pauseVideo():P.playVideo();b.textContent=paused?'▶ Lanjut':'⏸ Jeda';pcTimer()}else{pcHide();back()}};
 $('#lk').onclick=()=>{audio();if(tu)dismissTU()};
 $('#sh').onclick=()=>{paused=!paused;paused?P.pauseVideo():P.playVideo()};
 
 /* BH-START: Bintang Hebat (Firebase Realtime Database) */
 const DB=((window.FBC&&FBC.databaseURL)||'').replace(/\/$/,''),FB_ON=!!DB&&!/ISI/.test(DB);
-let A=J('kb',{}),PH=J('kp',{}),PS={},seenTs=null,pT=null,hadKids=false;
+let A=J('kb',{}),PH=J('kp',{}),lastA='',sseT=0,PS={},seenTs=null,pT=null,hadKids=false;
 const pad=n=>String(n).padStart(2,'0'),ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const monday=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-(x.getDay()+6)%7);return x};
 const ls=o=>Object.entries(o||{}).map(([id,v])=>({id,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
@@ -201,11 +239,12 @@ const wdays=()=>{const m=monday(new Date());return Array.from({length:7},(_,i)=>
 const weekTot=k=>wdays().reduce((n,x)=>n+dayTot(k,ds(x)),0);
 const rewOf=k=>ls(A.rewards).find(r=>r.kid===k||r.kid==='all');
 
-async function pull(){if(!FB_ON)return;try{const r=await fetch(DB+'/app.json?_='+Date.now(),{cache:'no-store'});if(!r.ok)return;A=(await r.json())||{};localStorage.setItem('kb',JSON.stringify(A));
- for(const k of ls(A.kids)){if(PH[k.id]&&PH[k.id].v===k.photoV)continue;try{const p=await (await fetch(DB+'/photos/'+k.id+'.json')).json();PH[k.id]={v:k.photoV,src:p||''}}catch(e){}}
- try{localStorage.setItem('kp',JSON.stringify(PH))}catch(e){}onData()}catch(e){}}
-function conn(){if(!FB_ON||!window.EventSource)return;try{const es=new EventSource(DB+'/app.json'),h=()=>{clearTimeout(pT);pT=setTimeout(pull,300)};es.addEventListener('put',h);es.addEventListener('patch',h)}catch(e){}}
-function onData(){const e=A.events&&A.events.last;if(e&&e.ts){if(seenTs===null)seenTs=e.ts;else if(e.ts!==seenTs){seenTs=e.ts;cele(e)}}
+async function pull(){if(!FB_ON)return;try{const r=await fetch(DB+'/app.json?_='+Date.now(),{cache:'no-store'});if(!r.ok)return;const x=await r.text();let ch=x!==lastA;if(ch){lastA=x;A=JSON.parse(x)||{};try{localStorage.setItem('kb',x)}catch(e){}}
+ for(const [pk,pv] of [...ls(A.kids).map(k=>[k.id,k.photoV]),...ls(A.game&&A.game.items).filter(x=>x.photoV).map(x=>['g_'+x.id,x.photoV])]){if(PH[pk]&&PH[pk].v===pv)continue;try{const p=await (await fetch(DB+'/photos/'+pk+'.json')).json();PH[pk]={v:pv,src:p||''};ch=true}catch(e){}}
+ try{localStorage.setItem('kp',JSON.stringify(PH))}catch(e){}
+ if(ch)onData()}catch(e){}}
+function conn(){if(!FB_ON||!window.EventSource)return;try{const es=new EventSource(DB+'/app.json'),tk=()=>{sseT=Date.now()},h=()=>{tk();clearTimeout(pT);pT=setTimeout(pull,300)};es.onopen=tk;es.addEventListener('keep-alive',tk);es.addEventListener('put',h);es.addEventListener('patch',h)}catch(e){}}
+function onData(){document.body.classList.toggle('lite',!!A.lite);const e=A.events&&A.events.last;if(e&&e.ts){if(seenTs===null)seenTs=e.ts;else if(e.ts!==seenTs){seenTs=e.ts;cele(e)}}
  const hk=kidsOn().length>0;if(view==='stars')drawStars();
  else if(view==='folders'){if(hk!==hadKids){hadKids=hk;draw()}else{const el=document.querySelector('.sc');if(el)el.innerHTML=scTxt()}}}
 
@@ -226,19 +265,108 @@ ${rw?`<div class="rw${done?' dn':''}"><div class="bar"><i style="width:${pct}%">
 <div class="wk">${wk}</div>${pr?`<div class="pr">💬 ${esc(pr)}</div>`:''}</div>`}
 
 function drawStars(){const a=$('#app'),ks=kidsOn(),t=ds(new Date());
- a.innerHTML='<div class="sv">'+Array.from({length:12},(_,i)=>`<span class="st" style="left:${(i*29+6)%94}%;top:${(i*47+8)%86}%;animation-delay:${(i%6)*.35}s">${i%3?'✨':'⭐'}</span>`).join('')+
- `<button class="c b" data-back>‹ Kembali</button><div class="stt">⭐ Bintang Hebat ⭐</div><div class="kg k${Math.min(ks.length,3)}">`+(ks.length?ks.map(k=>panel(k,t)).join(''):'<p>Belum ada anak. Tambahkan lewat halaman Admin.</p>')+'</div><div class="hint">Pilih ‹ Kembali lalu tekan OK</div></div>';
- a.querySelectorAll('.cnt').forEach(el=>{const n=+el.dataset.n;let i=0;const f=()=>{el.textContent=i;if(i<n){i++;setTimeout(f,Math.max(40,600/n))}};f()});const fb=a.querySelector('.c');if(fb)fb.focus()}
+ a.innerHTML='<div class="sv'+(murMode()==='yt'?' mu':'')+'">'+Array.from({length:8},(_,i)=>`<span class="st" style="left:${(i*29+6)%94}%;top:${(i*47+8)%86}%;animation-delay:${(i%6)*.35}s">${i%3?'✨':'⭐'}</span>`).join('')+
+ `<button class="c b" data-back>‹ Kembali</button>${murMode()!=='off'?`<button class="c b" data-mt>${mwPaused?'▶':'⏸'} ${murMode()==='radio'?'Radio':'Murotal'}</button>`:''}<div class="stt">⭐ Bintang Hebat ⭐</div><div class="kg k${Math.min(ks.length,3)}">`+(ks.length?ks.map(k=>panel(k,t)).join(''):'<p>Belum ada anak. Tambahkan lewat halaman Admin.</p>')+'</div><div class="hint">Pilih ‹ Kembali lalu tekan OK</div></div>';
+ a.querySelectorAll('.cnt').forEach(el=>{const n=+el.dataset.n;let i=0;const f=()=>{el.textContent=i;if(i<n){i++;setTimeout(f,Math.max(40,600/n))}};f()});const fb=a.querySelector('.c');if(fb)fb.focus();mwOn()}
 
 function confetti(n){const o=$('#cf');o.innerHTML='';const em=['⭐','✨','🎉','🌟','💛'];for(let i=0;i<n;i++){const s=document.createElement('span');s.textContent=em[i%5];s.style.cssText=`left:${Math.random()*100}%;font-size:${3+Math.random()*4}vh;animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*1.2}s`;o.appendChild(s)}}
 function fan(){if(!actx)return;const t=actx.currentTime;[523,659,784,1047,1319].forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),s=t+i*.14;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.3,s);g.gain.exponentialRampToValueAtTime(.001,s+.4);o.connect(g);g.connect(actx.destination);o.start(s);o.stop(s+.45)})}
 function cele(e){if(locked)return;const k=ls(A.kids).find(x=>x.id===e.kid);if(!k)return;
  if(view==='play'){const n=$('#note');n.textContent='⭐ '+(e.text||'Hebat!');n.style.display='block';fan();setTimeout(()=>n.style.display='none',6000);return}
- const ph=PH[k.id]&&PH[k.id].src,o=$('#ce');
+ const ph=PH[k.id]&&PH[k.id].src,o=$('#ce');celeN++;mwHold();
  o.innerHTML=`<div class="cb">${ph?`<img class="pf big2" src="${ph}" alt="">`:''}<div class="bigst">${e.stars?'⭐'.repeat(Math.min(e.stars,3)):'💌'}</div><div class="ct">${esc(e.text||'Hebat!')}</div></div>`;
- o.style.display='flex';confetti(70);fan();setTimeout(()=>say(e.text),900);setTimeout(()=>{o.style.display='none';$('#cf').innerHTML=''},7500)}
+ o.style.display='flex';confetti(45);fan();setTimeout(()=>say(e.text),900);setTimeout(()=>{o.style.display='none';$('#cf').innerHTML='';celeN=Math.max(0,celeN-1);if(!celeN)mwRes()},7500)}
 /* BH-END */
-hadKids=ls(A.kids).length>0;if(FB_ON){pull();conn();setInterval(pull,30000)}
-for(let i=0;i<5;i++)history.pushState(null,'');addEventListener('popstate',()=>{history.pushState(null,'');back()});
+
+
+/* MUR-START: Murotal (YouTube) atau radio sebagai suara latar di layar Bintang Hebat */
+const RADIO_DEF='http://streaming.an-nashihah.com:8822/index.html?sid=1';
+const murList=()=>ls(A.murotal).filter(x=>x.vid).map(x=>({id:x.vid,title:x.title||'Murotal'}));
+const murMode=()=>A.murotalOn===false?'off':A.murotalSource==='radio'?'radio':(murList().length?'yt':'off');
+let PM=null,mwKey='',mwMode='',mwPaused=false,mwWant=false,celeN=0,ytS=false,RA=null,raKey='',raI=0,raC=[],raT=null;
+function ytLoad(){if(window.YT&&YT.Player)return true;if(!ytS){ytS=true;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}return false}
+function mkM(){const L=murList();mwWant=false;if(PM||!L.length||!(window.YT&&YT.Player))return;
+ PM=new YT.Player('mp',{width:'100%',height:'100%',videoId:L[0].id,playerVars:{autoplay:1,controls:0,disablekb:1,rel:0,fs:0,playsinline:1,iv_load_policy:3,loop:1,playlist:L.map(x=>x.id).join(',')},
+  events:{onReady:e=>{if(PM&&!mwPaused&&!celeN&&view==='stars'&&murMode()==='yt')e.target.playVideo()},onStateChange:e=>{if(e.data===1){try{$('#mt').textContent='🎧 '+(PM.getVideoData().title||'Murotal')}catch(x){}}},onError:()=>{try{PM.nextVideo()}catch(x){}}}})}
+function ytKill(){if(PM){try{PM.destroy()}catch(e){}PM=null;mwKey='';mwWant=false;const p=$('#mwp');if(p)p.innerHTML='<div id="mp"></div>'}}
+function ytPause(){try{if(PM&&PM.pauseVideo)PM.pauseVideo()}catch(e){}}
+/* Radio: tautan halaman status SHOUTcast (.../index.html?sid=1) diubah menjadi alamat stream */
+function raCands(u){try{const x=new URL(u);if(/\.html?$/i.test(x.pathname)){const sid=x.searchParams.get('sid')||'1';return[x.origin+'/stream/'+sid+'/',x.origin+'/;',x.origin+'/;stream.mp3']}}catch(e){}return[u]}
+function raStop(){clearTimeout(raT);if(RA){try{RA.onerror=null;RA.pause();RA.removeAttribute('src');RA.load()}catch(e){}RA=null}raKey=''}
+function raPlay(){if(!RA)return;try{const p=RA.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+function raOn(){const u=((A.radio||'')+'').trim()||RADIO_DEF;
+ if(!RA||raKey!==u){raStop();raKey=u;raC=raCands(u);raI=0;RA=new Audio();RA.onplaying=()=>{$('#mt').textContent='📻 Radio'};
+  RA.onerror=()=>{if(raI+1<raC.length){raI++;RA.src=raC[raI];raPlay()}else{$('#mt').textContent='📻 Radio tidak bisa diputar';clearTimeout(raT);raT=setTimeout(()=>{if(RA&&view==='stars'&&murMode()==='radio'){raI=0;RA.src=raC[0];raPlay()}},15000)}};
+  RA.src=raC[0];$('#mt').textContent='📻 Memuat radio...'}
+ if(!mwPaused&&!celeN&&RA.paused)raPlay()}
+function mwOn(){const m=murMode();if(view!=='stars'||m==='off'){mwOff();return}
+ const w=$('#mw');w.style.display='block';w.classList.toggle('rd',m==='radio');
+ if(mwMode!==m){mwMode=m;$('#mt').textContent=m==='radio'?'📻 Radio':'🎧 Murotal'}
+ if(m==='radio'){ytKill();$('#mwp').style.display='none';raOn();return}
+ raStop();$('#mwp').style.display='block';
+ const L=murList(),key=L.map(x=>x.id).join();
+ if(PM&&mwKey!==key){try{PM.destroy()}catch(e){}PM=null;$('#mwp').innerHTML='<div id="mp"></div>'}
+ mwKey=key;
+ if(!PM){if(ytLoad())mkM();else mwWant=true}
+ else if(!mwPaused&&!celeN){try{const s=PM.getPlayerState();if(s!==1&&s!==3)PM.playVideo()}catch(e){}}}
+function mwOff(){const w=$('#mw');if(w)w.style.display='none';ytKill();raStop()}
+function mwHold(){ytPause();try{if(RA)RA.pause()}catch(e){}}
+function mwRes(){if(view==='stars'&&!mwPaused&&!locked&&!celeN){if(murMode()==='radio'){if(RA){RA.src=raC[raI]||raC[0];raPlay()}}else{try{if(PM&&PM.playVideo)PM.playVideo()}catch(e){}}}}
+/* MUR-END */
+/* GAME-START: Permainan belajar */
+const CATS=[{id:'abjad',t:'Abjad',i:'🔤',bg:'linear-gradient(135deg,#1d4ed8,#38bdf8)'},{id:'angka',t:'Angka',i:'🔢',bg:'linear-gradient(135deg,#c2410c,#fbbf24)'},{id:'hij',t:'Huruf Hijaiyah',i:'🕌',bg:'linear-gradient(135deg,#065f46,#34d399)'}];
+const GAMES={abjad1:{cat:'abjad',t:'Dengar Huruf',i:'🔊'},abjad2:{cat:'abjad',t:'Huruf Awal',i:'🍎'},angka1:{cat:'angka',t:'Hitung Bintang',i:'⭐'},angka2:{cat:'angka',t:'Dengar Angka',i:'🔊'},hij1:{cat:'hij',t:'Kenali Huruf',i:'ب'}};
+const AN={A:'a',B:'be',C:'ce',D:'de',E:'e',F:'ef',G:'ge',H:'ha',I:'i',J:'je',K:'ka',L:'el',M:'em',N:'en',O:'o',P:'pe',Q:'ki',R:'er',S:'es',T:'te',U:'u',V:'ve',W:'we',X:'iks',Y:'ye',Z:'zet'};
+const NUMW=['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas','dua belas','tiga belas','empat belas','lima belas','enam belas','tujuh belas','delapan belas','sembilan belas','dua puluh'];
+const HJ=[['ا','Alif'],['ب','Ba'],['ت','Ta'],['ث','Tsa'],['ج','Jim'],['ح','Ha'],['خ','Kho'],['د','Dal'],['ذ','Dzal'],['ر','Ra'],['ز','Zai'],['س','Sin'],['ش','Syin'],['ص','Shad'],['ض','Dhad'],['ط','Tha'],['ظ','Zha'],['ع','Ain'],['غ','Ghain'],['ف','Fa'],['ق','Qaf'],['ك','Kaf'],['ل','Lam'],['م','Mim'],['ن','Nun'],['و','Wau'],['ه','Ha'],['ي','Ya']];
+const WORDS=[['A','Apel','🍎'],['B','Bola','⚽'],['C','Cumi','🦑'],['D','Domba','🐑'],['E','Es krim','🍦'],['F','Foto','📷'],['G','Gajah','🐘'],['H','Harimau','🐯'],['I','Ikan','🐟'],['J','Jeruk','🍊'],['K','Kucing','🐱'],['L','Lebah','🐝'],['M','Mobil','🚗'],['N','Nanas','🍍'],['O','Ombak','🌊'],['P','Pisang','🍌'],['Q','Quran','📖'],['R','Rumah','🏠'],['S','Sapi','🐄'],['T','Topi','🎩'],['U','Ular','🐍'],['V','Vespa','🛵'],['W','Wortel','🥕'],['Z','Zebra','🦓']];
+const OBJ=[['🍎','apel'],['⭐','bintang'],['🎈','balon'],['🐟','ikan'],['🚗','mobil'],['🍪','kue'],['🐥','anak ayam']];
+const COL=['#e11d48','#7c3aed','#0d9488'],PRAISE=['Hebat','Pintar sekali','Keren','Yeay, bagus sekali','Wah, benar'],LET=Object.keys(AN),N10=[1,2,3,4,5,6,7,8,9,10];
+const npool=()=>{const g=A.game||{},a=[];if(g.num1!==false)for(let i=1;i<=10;i++)a.push(i);if(g.num2)for(let i=11;i<=20;i++)a.push(i);return a.length?a:N10};
+let G=null,curAu=null;const AU={};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const others=(pool,n,bad)=>shuf(pool.filter(x=>!bad(x))).slice(0,n);
+const lcard=x=>({h:`<span class="gg">${x}${x.toLowerCase()}</span>`}),ncard=x=>({h:`<span class="gg">${x}</span>`});
+function items(){const g=A.game||{},c=ls(g.items).map(x=>{const p=PH['g_'+x.id];return{L:(x.word||'').trim().charAt(0).toUpperCase(),word:x.word,pic:p&&p.src?`<img src="${p.src}" alt="">`:(x.emoji?esc(x.emoji):'')}}).filter(x=>/^[A-Z]$/.test(x.L)&&x.pic);
+ return(g.useDefault===false?[]:WORDS.map(w=>({L:w[0],word:w[1],pic:w[2]}))).concat(c)}
+function gen(id){
+ if(id==='abjad2'){const it=rnd(items());if(it){const L=it.L,o=others(LET,2,x=>x===L);return{key:it.word,pic:it.pic,word:it.word,say:it.word+'. Huruf awalnya apa?',good:it.word+', huruf awalnya '+AN[L]+'.',ch:[L,...o].map((x,i)=>({ok:i===0,...lcard(x)}))}}id='abjad1'}
+ if(id==='abjad1'){const L=rnd(LET),o=others(LET,2,x=>x===L);return{key:L,say:'Mana huruf '+AN[L]+'?',good:'Itu huruf '+AN[L]+'.',ch:[L,...o].map((x,i)=>({ok:i===0,...lcard(x)}))}}
+ if(id==='angka1'){const P=npool(),n=rnd(P),ob=rnd(OBJ),o=others(P,2,x=>x===n);return{key:n+ob[0],count:n,emoji:ob[0],say:'Ada berapa '+ob[1]+'?',good:'Ada '+NUMW[n]+' '+ob[1]+'.',ch:[n,...o].map((x,i)=>({ok:i===0,...ncard(x)}))}}
+ if(id==='angka2'){const P=npool(),n=rnd(P),o=others(P,2,x=>x===n);return{key:'n'+n,say:'Mana angka '+NUMW[n]+'?',good:'Itu angka '+NUMW[n]+'.',ch:[n,...o].map((x,i)=>({ok:i===0,...ncard(x)}))}}
+ const a=rnd(HJ),o=others(HJ,2,x=>x[1]===a[1]);return{key:a[1],aud:HJ.indexOf(a),say:'Mana huruf '+a[1]+'?',good:'Itu huruf '+a[1]+'.',ch:[a,...o].map((x,i)=>({ok:i===0,h:`<span class="gg ar">${x[0]}</span>`}))}}
+function mkQ(id){let q;for(let t=0;t<6;t++){q=gen(id);if(!G||G.lastKey!==q.key)break}if(G)G.lastKey=q.key;q.ch=shuf(q.ch);return q}
+
+async function loadAu(){const au=(A.game&&A.game.audio)||{};for(const k in AU)if(!au[k])delete AU[k];
+ for(const [ai,av] of Object.entries(au)){if(AU[ai]&&AU[ai].v===av)continue;try{const p=await (await fetch(DB+'/photos/a_'+ai+'.json')).json();AU[ai]={v:av,src:p||''}}catch(e){}}}
+function playAu(i){try{if(curAu)curAu.pause();const x=AU[i];if(!x||!x.src)return false;curAu=new Audio(x.src);const p=curAu.play();if(p&&p.catch)p.catch(()=>{});return true}catch(e){return false}}
+const hasAu=q=>q.aud!=null&&AU[q.aud]&&AU[q.aud].src;
+function sayQ(q){if(hasAu(q))playAu(q.aud);else say(q.say)}
+function gameCard(){return '<button class="c f" style="--bg:linear-gradient(135deg,#3a86ff,#8338ec)" data-pg><i>🎮</i>Permainan<small>Abjad · Angka · Hijaiyah</small></button>'}
+function drawGames(){G=null;$('#app').innerHTML='<button class="c b" data-back>‹ Kembali</button><h1>🎮 Permainan</h1>'+CATS.map(c=>`<div class="gcat"><h2>${c.i} ${c.t}</h2><div class="g">`+Object.entries(GAMES).filter(([id,g])=>g.cat===c.id).map(([id,g])=>`<button class="c f" style="--bg:${c.bg}" data-gm="${id}"><i${id==='hij1'?' class="ar"':''}>${g.i}</i>${g.t}</button>`).join('')+'</div></div>').join('');
+ const f=document.querySelector('#app .c.f');if(f)f.focus()}
+function drawGame(){if(!G||!G.q)return;const q=G.q,gm=GAMES[G.id],cat=CATS.find(c=>c.id===gm.cat);
+ let st;
+ if(q.pic)st=`<div class="pic">${q.pic}</div><div class="pw">${esc(q.word)}</div>`;
+ else if(q.count){const c=q.count,s=c<=5?13:c<=10?10:c<=15?8:7,rows=[];for(let i=0;i<c;i+=5)rows.push((q.emoji+' ').repeat(Math.min(5,c-i)));st=`<div class="cnt2" style="font-size:${s}vh">${rows.join('<br>')}</div>`}
+ else st='<div class="spk">🦉<span>🔊</span></div>';
+ $('#app').innerHTML=`<div class="gsc" style="background:${cat.bg}"><div class="gtop"><button class="c b" data-back>‹ Kembali</button><div class="gt">${gm.i} ${gm.t}</div><button class="c b" data-rp>🔊 Ulangi</button></div><div class="gst">${st}</div><div class="chs">`+q.ch.map((c,i)=>`<button class="c ch" style="--cc:${COL[i]}" data-ch="${i}">${c.h}</button>`).join('')+'</div></div>';
+ const f=document.querySelector('.ch');if(f)f.focus()}
+function startGame(id){G={id,wrong:0,tok:0,lastKey:null,lockIn:false};view='game';
+ if(id==='hij1'&&FB_ON&&A.game&&A.game.audio){$('#app').innerHTML='<h1>Memuat suara...</h1>';loadAu().then(()=>{if(G&&G.id===id&&view==='game')next()})}else next()}
+function next(){G.wrong=0;G.lockIn=false;G.tok++;G.q=mkQ(G.id);drawGame();const tk=G.tok;setTimeout(()=>{if(G&&G.tok===tk&&view==='game')sayQ(G.q)},500)}
+function answer(i){if(!G||G.lockIn||view!=='game')return;const c=G.q.ch[i];if(c.used)return;const bs=document.querySelectorAll('.ch');
+ if(c.ok){G.lockIn=true;const nm=(D.child&&D.child.name)||'',p=rnd(PRAISE)+(nm&&Math.random()<.5?', '+nm:'')+'!',tk=G.tok,n=Math.max(1,3-G.wrong),o=$('#ce');
+  o.innerHTML=`<div class="cb"><div class="bigst">${'⭐'.repeat(n)}</div><div class="ct">${esc(p)}</div></div>`;o.style.display='flex';confetti(35);fan();if(hasAu(G.q)){say(p);setTimeout(()=>{if(G&&G.tok===tk)playAu(G.q.aud)},1700)}else say(p+' '+G.q.good);
+  setTimeout(()=>{if(!G||G.tok!==tk)return;o.style.display='none';$('#cf').innerHTML='';next()},4200)}
+ else{c.used=true;G.wrong++;bs[i].classList.add('no');say(rnd(['Coba lagi ya','Belum tepat, coba lagi','Ayo coba lagi']));
+  if(G.wrong>=2){const k=G.q.ch.findIndex(x=>x.ok);if(bs[k])bs[k].classList.add('hl')}
+  const nf=[...bs].find((b,j)=>!G.q.ch[j].used);if(nf)nf.focus()}}
+function exitGame(){G=null;$('#ce').style.display='none';$('#cf').innerHTML=''}
+/* GAME-END */
+document.body.classList.toggle('lite',!!A.lite);hadKids=ls(A.kids).length>0;if(FB_ON){pull();conn();setInterval(()=>{if(Date.now()-sseT>90000)pull()},30000);setInterval(pull,600000)}
+addEventListener('pagehide',sv);
+for(let i=0;i<5;i++)history.pushState(null,'');addEventListener('popstate',()=>{history.pushState(null,'')});
 load();
 </script></body></html>
