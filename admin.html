@@ -58,8 +58,8 @@ button.x{background:#b3261e;padding:6px 10px;min-height:38px}button.s{background
 <div id="fbno" hidden><section><h2>Firebase belum diatur</h2><p>Isi file <b>firebase-config.js</b> dengan konfigurasi proyek Firebase Anda, lalu muat ulang halaman ini. Langkahnya ada di <b>PANDUAN-FIREBASE.md</b>.</p></section></div>
 <div id="fbin" hidden><section><h2>Masuk ke Firebase</h2><div class="r"><input class="w" id="fe" type="email" placeholder="Email admin"><input class="w" id="fp" type="password" placeholder="Password"><button id="fgo">Masuk</button></div><small id="fer"></small></section></div>
 <div id="fbon" hidden>
-<div class="tabs"><button class="tb on" data-s="td">Hari ini</button><button class="tb" data-s="tk">Anak</button><button class="tb" data-s="ta">Kegiatan</button><button class="tb" data-s="tr">Hadiah</button><button class="tb" data-s="th">Riwayat</button><button class="tb" data-s="tg">Permainan</button><button class="tb" data-s="tq">Murotal</button><button class="s" id="fout">Keluar</button></div>
-<section id="td"></section><section id="tk" hidden></section><section id="ta" hidden></section><section id="tr" hidden></section><section id="th" hidden></section><section id="tg" hidden></section><section id="tq" hidden></section>
+<div class="tabs"><button class="tb on" data-s="td">Hari ini</button><button class="tb" data-s="tk">Anak</button><button class="tb" data-s="ta">Kegiatan</button><button class="tb" data-s="tr">Hadiah</button><button class="tb" data-s="th">Riwayat</button><button class="tb" data-s="tg">Permainan</button><button class="tb" data-s="tq">Murotal</button><button class="tb" data-s="tl">Galeri</button><button class="s" id="fout">Keluar</button></div>
+<section id="td"></section><section id="tk" hidden></section><section id="ta" hidden></section><section id="tr" hidden></section><section id="th" hidden></section><section id="tg" hidden></section><section id="tq" hidden></section><section id="tl" hidden></section>
 </div></div></div></main>
 <div id="bar" hidden><span id="msg">Belum ada perubahan.</span><span><button class="s" id="cp">Salin JSON</button> <button id="sv">Simpan ke GitHub</button></span></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -141,6 +141,7 @@ $('sv').onclick=async()=>{const g=cfg();if(!g.o||!g.r||!g.t)return msg('Isi kone
 
 /* ===== Penilaian (Firebase) ===== */
 const FBOK=!!(window.FBC&&FBC.apiKey&&!/ISI/.test(FBC.apiKey)&&window.firebase);
+let GL={},PR={};
 let db,auth,A={},PH={},stab='td',listening=false,day0='';
 const pad=n=>String(n).padStart(2,'0'),ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const monday=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-(x.getDay()+6)%7);return x};
@@ -167,13 +168,16 @@ $('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
 
 function fbStart(){if(!FBOK){$('fbno').hidden=false;return}if(db)return;
  firebase.initializeApp(FBC);auth=firebase.auth();db=firebase.database();
- auth.onAuthStateChanged(u=>{$('fbin').hidden=!!u;$('fbon').hidden=!u;lkUI();if(u&&!listening){listening=true;ref('').on('value',s=>{A=s.val()||{};R();lkUI();autoClean()});let PHk={},PHg={};const mergePH=()=>{PH={...PHk,...PHg};R()};
+ auth.onAuthStateChanged(u=>{$('fbin').hidden=!!u;$('fbon').hidden=!u;lkUI();if(u&&!listening){listening=true;ref('').on('value',s=>{A=s.val()||{};R();lkUI();autoClean()});db.ref('gal/cfg').on('value',s=>{GL.cfg=s.val();if(stab==='tl')R()},()=>{});
+ db.ref('gal/devices').on('value',s=>{GL.devices=s.val()||{};if(stab==='tl')R()},()=>{});
+ db.ref('pair').on('value',s=>{PR=s.val()||{};if(stab==='tl')R()},()=>{});
+ let PHk={},PHg={};const mergePH=()=>{PH={...PHk,...PHg};R()};
  db.ref('photos').orderByKey().startAt('-').endAt('-\uf8ff').on('value',s=>{PHk=s.val()||{};mergePH()});
  db.ref('photos').orderByKey().startAt('g_').endAt('g_\uf8ff').on('value',s=>{PHg=s.val()||{};mergePH()})}})}
 $('fgo').onclick=()=>auth.signInWithEmailAndPassword($('fe').value.trim(),$('fp').value).catch(e=>$('fer').textContent='Gagal masuk ('+e.code+'). Cek email dan password.');
 $('fp').onkeydown=e=>{if(e.key==='Enter')$('fgo').click()};
 
-function R(){if(!$('fbon').hidden)({td:rTd,tk:rTk,ta:rTa,tr:rTr,th:rTh,tg:rTg,tq:rTq})[stab]()}
+function R(){if(!$('fbon').hidden)({td:rTd,tk:rTk,ta:rTa,tr:rTr,th:rTh,tg:rTg,tq:rTq,tl:rTl})[stab]()}
 const none='<small>Belum ada data.</small>';
 
 function rTd(){const ks=ls(A.kids).filter(k=>k.active!==false),d=day0;
@@ -198,6 +202,21 @@ function rTr(){const ks=ls(A.kids),mon=ds(monday(new Date()));$('tr').innerHTML=
 
 function rTh(){const ks=ls(A.kids),L=['Sen','Sel','Rab','Kam','Jum','Sab','Min'];$('th').innerHTML='<h2>Riwayat minggu ini</h2>'+(ks.length?'<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;text-align:center"><tr><th style="text-align:left">Anak</th>'+L.map(x=>'<th>'+x+'</th>').join('')+'<th>Total</th></tr>'+ks.map(k=>`<tr style="border-top:1px solid #eee"><td style="text-align:left;padding:8px 0">${esc(k.name)}</td>`+wdays().map(x=>'<td>'+dayTot(k.id,ds(x))+'</td>').join('')+`<td><b>${weekTot(k.id)}</b></td></tr>`).join('')+'</table></div>':none)+'<div class="r"><button class="s" data-act="clean">Bersihkan riwayat lebih dari 60 hari</button></div>'}
 
+const dfId=v=>{const m=v.match(/\/folders\/([\w-]{10,})/)||v.match(/[?&]id=([\w-]{10,})/)||v.match(/^([\w-]{10,})$/);return m&&m[1]};
+function rTl(){const c=GL.cfg||{},dev=GL.devices||{},pend=Object.entries(PR).filter(([u])=>!dev[u]),ok=Object.entries(dev);
+ $('tl').innerHTML=`<h2>Galeri Google Drive</h2>
+ <button class="tgb ${c.on?'on':'off'}" data-act="ltog">${c.on?'✅ AKTIF. Tekan untuk menonaktifkan':'⏸ NONAKTIF. Tekan untuk mengaktifkan'}</button>
+ <small>Foto dan video tetap di Drive Anda, tidak disalin. Folder harus dibagikan "Siapa saja yang memiliki link" (hanya lihat). Kunci API dan ID folder hanya bisa dibaca perangkat TV yang Anda setujui di bawah. Langkah lengkap: PANDUAN-GALERI.md.</small>
+ <div class="r"><input class="w" id="dk" type="password" value="${esc(c.key||'')}" placeholder="Kunci API Google Drive (dibatasi ke Drive API)"></div>
+ <div class="r"><input class="w" id="df" value="${esc(c.folder?'https://drive.google.com/drive/folders/'+c.folder:'')}" placeholder="Link folder Google Drive"><button data-act="lsave">Simpan</button><button class="s" data-act="ltest">Uji folder</button></div><small id="lres"></small>
+ <h2 style="margin-top:16px">Perangkat TV</h2><small>Di TV, buka kartu Galeri. TV menampilkan kode 6 angka. Cocokkan kode itu dengan yang tampil di sini, lalu setujui. Hanya Anda (akun Firebase admin) yang bisa menyetujui atau mencabut.</small>`+
+ (pend.map(([u,p])=>`<div class="v"><span>⏳ TV ${esc(u.slice(0,6))} · kode <b>${esc((p&&p.code)||'?')}</b>${p&&p.ts?' · '+new Date(p.ts).toLocaleString():''}</span><div><button data-act="lok" data-u="${esc(u)}" data-cd="${esc((p&&p.code)||'')}">Setujui</button></div></div>`).join('')||'<div class="v"><small>Tidak ada permintaan baru.</small></div>')+
+ '<h2 style="margin-top:16px">Perangkat yang disetujui</h2>'+
+ (ok.map(([u])=>`<div class="v"><span>📺 TV ${esc(u.slice(0,6))}</span><div><button class="x" data-act="lrev" data-u="${esc(u)}">Cabut</button></div></div>`).join('')||'<div class="v"><small>Belum ada.</small></div>')}
+async function lTest(){const key=$('dk').value.trim(),fid=dfId($('df').value.trim()),o=$('lres');if(!key||!fid){o.textContent='Isi kunci API dan link folder yang benar.';return}o.textContent='Memeriksa...';
+ try{const q="'"+fid+"' in parents and trashed=false and (mimeType contains 'image/' or mimeType contains 'video/')",r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&pageSize=100&fields=files(id,mimeType)&key='+encodeURIComponent(key)),j=await r.json();
+  if(!r.ok){o.textContent='Gagal (kode '+r.status+'): '+((j.error&&j.error.message)||'periksa kunci API dan pembagian folder');return}
+  const f=j.files||[],v=f.filter(x=>/^video/.test(x.mimeType)).length;o.textContent='Berhasil. Ditemukan '+f.length+(f.length>=100?'+':'')+' file ('+v+' video).'}catch(e){o.textContent='Gagal terhubung ke Google Drive.'}}
 function rTq(){const its=ls(A.murotal),on=A.murotalOn!==false,src=A.murotalSource==='radio'?'radio':'yt';
  $('tq').innerHTML=`<h2>Murotal dan radio di Bintang Hebat</h2>
  <button class="tgb ${on?'on':'off'}" data-act="qtog">${on?'✅ AKTIF. Diputar di layar Bintang Hebat. Tekan untuk menonaktifkan':'⏸ NONAKTIF. Tekan untuk mengaktifkan'}</button>
@@ -227,7 +246,7 @@ function mv(path,list,id,dir){const i=list.findIndex(x=>x.id===id),j=i+dir;if(j<
 function pic(file,cb){const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=256;c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);URL.revokeObjectURL(u);cb(c.toDataURL('image/jpeg',.75))};im.src=u}
 
 $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
- if(d.s){stab=d.s;document.querySelectorAll('#fbon .tabs .tb').forEach(x=>x.className='tb'+(x.dataset.s===stab?' on':''));['td','tk','ta','tr','th','tg','tq'].forEach(i=>$(i).hidden=i!==stab);return R()}
+ if(d.s){stab=d.s;document.querySelectorAll('#fbon .tabs .tb').forEach(x=>x.className='tb'+(x.dataset.s===stab?' on':''));['td','tk','ta','tr','th','tg','tq','tl'].forEach(i=>$(i).hidden=i!==stab);return R()}
  if(b.id==='fout')return auth.signOut();
  const a=d.act;if(!a)return;const K=ls(A.kids),AC=ls(A.activities);
  if(a==='star'){const cur=+scOf(d.k,day0)[d.a]||0;setScore(d.k,d.a,day0,+d.n===cur?0:+d.n)}
@@ -246,6 +265,11 @@ $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;cons
  else if(a==='qdel'){if(confirm('Hapus murotal ini?'))ref('murotal/'+d.id).remove()}
  else if(a==='qtog'){ref('murotalOn').set(A.murotalOn===false)}
  else if(a==='qrsave'){ref('radio').set($('qr').value.trim())}
+ else if(a==='ltog'){db.ref('gal/cfg/on').set(!(GL.cfg&&GL.cfg.on))}
+ else if(a==='lsave'){const key=$('dk').value.trim(),fid=dfId($('df').value.trim());if(!key||!fid)return alert('Isi kunci API dan link folder yang benar.');db.ref('gal/cfg').set({key,folder:fid,on:!GL.cfg||GL.cfg.on!==false})}
+ else if(a==='ltest')lTest();
+ else if(a==='lok'){if(!confirm('Setujui TV dengan kode '+d.cd+'? Pastikan kode ini sama dengan yang tampil di layar TV.'))return;await db.ref('gal/devices/'+d.u).set({code:d.cd,at:Date.now()});db.ref('pair/'+d.u).remove()}
+ else if(a==='lrev'){if(confirm('Cabut akses TV ini?'))db.ref('gal/devices/'+d.u).remove()}
  else if(a==='aplay'){db.ref('photos/a_'+d.i).once('value').then(sn=>{const v=sn.val();if(v)new Audio(v).play()})}
  else if(a==='adelau'){if(confirm('Hapus suara huruf ini?')){ref('game/audio/'+d.i).remove();db.ref('photos/a_'+d.i).remove()}}
  else if(a==='gadd'){const w=$('gw').value.trim(),em=$('ge').value.trim(),f=$('gf').files[0];if(!/^[A-Za-z]/.test(w))return alert('Nama benda harus diawali huruf A sampai Z.');if(!em&&!f)return alert('Isi emoji atau pilih foto.');const id=ref('game/items').push().key;await ref('game/items/'+id).set({word:w,emoji:em,order:Date.now(),photoV:0});if(f)pic(f,url=>db.ref('photos/g_'+id).set(url).then(()=>ref('game/items/'+id+'/photoV').set(Date.now())))}

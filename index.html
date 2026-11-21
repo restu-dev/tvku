@@ -99,6 +99,10 @@ h1{font-size:4.2vh;margin:0 0 3vh;font-weight:700}
 #pc .c{padding:1.6vh 3vw;font-size:3vh;font-weight:700;background:#000c;text-align:center}
 body.lite .st{display:none}body.lite *{animation:none!important;transition:none!important}
 #mw.rd{top:2vh;width:auto;max-width:36vh;padding:1vh 2.5vh;border-radius:5vh}
+.gv{position:fixed;inset:0;background:#000;z-index:4;display:flex;align-items:center;justify-content:center}
+.gv img,.gv video{max-width:100vw;max-height:100vh;object-fit:contain}
+.gc{position:absolute;bottom:3vh;left:50%;transform:translateX(-50%);display:flex;gap:2vw}.gc .c{padding:1.4vh 2.6vw;font-size:3vh;font-weight:700;background:#000c;text-align:center}
+.g .v em{position:absolute}
 </style></head><body>
 <div id="app"></div>
 <div id="pl"><div id="player"></div><div id="sh"></div></div>
@@ -168,12 +172,12 @@ setInterval(()=>{if(view==='play'&&!paused&&D.settings.mode==='duration'&&lim())
  else tm.style.display='none'},1000);
 let ldK=0;setInterval(()=>{if(ldK++%(FB_ON?3:1)===0)load()},20000);
 
-function draw(){const a=$('#app');if(view!=='stars')mwOff();if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='game'){drawGame();return}
+function draw(){const a=$('#app');if(view!=='stars')mwOff();if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='game'){drawGame();return}if(view==='gal'){drawGal();return}if(view==='galv'){drawGv();return}
  if(view==='welcome'){const c=D.child||{};if(!c.name&&!c.photo){view='folders';return draw()}
   a.innerHTML=`<div class="wl">${c.photo?`<img class="ph" src="${c.photo}" alt="">`:''}<h1>Halo${c.name?', '+esc(c.name):''}!</h1><button class="c b" data-go>▶ Mulai</button></div>`}
  else if(view==='folders'){const L=J('last',null);let rs='';
   if(L&&D.folders[L.f]){const v=D.folders[L.f].videos.findIndex(x=>x.id===L.id);if(v>=0)rs=`<button class="c f rs" data-r="${L.f}.${v}">▶ Lanjutkan: ${esc(D.folders[L.f].videos[v].title)}</button>`}
-  a.innerHTML='<h1>Pilih folder</h1><div class="g">'+rs+starCard()+gameCard()+(D.folders.length?D.folders.map((f,i)=>`<button class="c f" style="--bg:${esc(f.color||'#2a2466')}" data-f="${i}"><i>${esc(f.icon||'📁')}</i>${esc(f.name)}<small>${f.videos.length} video</small></button>`).join(''):'<p>Belum ada folder. Tambahkan lewat halaman Admin.</p>')+'</div>'}
+  a.innerHTML='<h1>Pilih folder</h1><div class="g">'+rs+starCard()+gameCard()+galCard()+(D.folders.length?D.folders.map((f,i)=>`<button class="c f" style="--bg:${esc(f.color||'#2a2466')}" data-f="${i}"><i>${esc(f.icon||'📁')}</i>${esc(f.name)}<small>${f.videos.length} video</small></button>`).join(''):'<p>Belum ada folder. Tambahkan lewat halaman Admin.</p>')+'</div>'}
  else{const f=D.folders[fi];a.innerHTML=`<button class="c b" data-back>‹ Kembali</button><h1>${esc(f.icon||'')} ${esc(f.name)}</h1>${vb()}<div class="g">`+f.videos.map((v,i)=>`<button class="c v${v.bad?' bad':''}" data-v="${i}"><img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt=""><span>${esc(v.title)}</span>${isBad(v)?'<em>⚠ Tidak bisa diputar</em>':''}</button>`).join('')+'</div>'}
  const first=a.querySelector('.c');if(first)first.focus()}
 
@@ -182,6 +186,12 @@ $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const 
  else if(d.r){const[x,y]=d.r.split('.');fi=+x;play(+y)}
  else if(d.s!==undefined){view='stars';draw()}
  else if(d.pg!==undefined){view='games';draw()}
+ else if(d.gal!==undefined||d.gchk!==undefined)galOpen()
+ else if(d.gi!==undefined)galView(+d.gi)
+ else if(d.gprev!==undefined)galStep(-1)
+ else if(d.gnext!==undefined)galStep(1)
+ else if(d.gmore!==undefined)galFetch()
+ else if(d.gpp!==undefined)galPP()
  else if(d.mt!==undefined){mwPaused=!mwPaused;mwPaused?mwHold():mwRes();drawStars()}
  else if(d.gm!==undefined)startGame(d.gm)
  else if(d.ch!==undefined)answer(+d.ch)
@@ -203,8 +213,8 @@ function pcHide(){clearTimeout(hT);const p=$('#pc');if(p)p.style.display='none';
 function pcTimer(){clearTimeout(hT);hT=setTimeout(pcHide,7000)}
 function pcShow(){const p=$('#pc'),b=p.querySelector('.pp');p.style.display='flex';b.textContent=paused?'▶ Lanjut':'⏸ Jeda';b.focus();pcTimer()}
 function hint(){pcShow()}
-function stop(){sv();if(P&&P.stopVideo)P.stopVideo();show('#pl',0);mwOff();pcHide()}
-function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view=mur?'murotal':'videos';mur=false}else if(view==='murotal')view='stars';else if(view==='videos')view='folders';else if(view==='stars')view='folders';else if(view==='game'){exitGame();view='games'}else if(view==='games')view='folders';else return;draw()}
+function stop(){sv();galStop();if(P&&P.stopVideo)P.stopVideo();show('#pl',0);mwOff();pcHide()}
+function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view=mur?'murotal':'videos';mur=false}else if(view==='murotal')view='stars';else if(view==='videos')view='folders';else if(view==='stars')view='folders';else if(view==='game'){exitGame();view='games'}else if(view==='galv'){galStop();view='gal'}else if(view==='gal'){galLeave();view='folders'}else if(view==='games')view='folders';else return;draw()}
 
 const isBackKey=e=>{const k=e.key;return k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4||e.keyCode===27};
 document.addEventListener('keydown',e=>{const k=e.key;audio();if(isBackKey(e)){e.preventDefault();return}
@@ -365,6 +375,49 @@ function answer(i){if(!G||G.lockIn||view!=='game')return;const c=G.q.ch[i];if(c.
   const nf=[...bs].find((b,j)=>!G.q.ch[j].used);if(nf)nf.focus()}}
 function exitGame(){G=null;$('#ce').style.display='none';$('#cf').innerHTML=''}
 /* GAME-END */
+
+/* GAL-START: Galeri Google Drive (hanya untuk perangkat yang disetujui pemilik) */
+let GAL={cfg:null,items:[],next:'',st:'',msg:'',code:'',idx:0},gT=null;
+const GA={uid:J('gu',''),rt:J('grt',''),id:'',exp:0};
+const gSave=()=>{try{localStorage.setItem('gu',JSON.stringify(GA.uid));localStorage.setItem('grt',JSON.stringify(GA.rt))}catch(e){}};
+async function gAuth(){if(GA.id&&Date.now()<GA.exp-60000)return GA.id;const k=FBC.apiKey;let j;
+ if(GA.rt){try{j=await (await fetch('https://securetoken.googleapis.com/v1/token?key='+k,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(GA.rt)})).json();
+  if(j.id_token){GA.id=j.id_token;GA.rt=j.refresh_token;GA.uid=j.user_id;GA.exp=Date.now()+(+j.expires_in)*1000;gSave();return GA.id}}catch(e){}}
+ j=await (await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+k,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'})).json();
+ if(!j.idToken)throw new Error('auth');GA.id=j.idToken;GA.rt=j.refreshToken;GA.uid=j.localId;GA.exp=Date.now()+(+j.expiresIn)*1000;gSave();return GA.id}
+const gTh=(x,s)=>x.thumbnailLink?x.thumbnailLink.replace(/=s\d+(-c)?$/,'=s'+s):'https://drive.google.com/thumbnail?id='+x.id+'&sz=w'+s;
+const gVid=x=>'https://www.googleapis.com/drive/v3/files/'+x.id+'?alt=media&key='+encodeURIComponent(GAL.cfg.key);
+const galCard=()=>FB_ON?'<button class="c f" style="--bg:linear-gradient(135deg,#0ea5e9,#6366f1)" data-gal><i>🖼️</i>Galeri<small>Foto dan video keluarga</small></button>':'';
+async function galOpen(){clearInterval(gT);view='gal';GAL.st='load';draw();
+ try{const id=await gAuth(),r=await fetch(DB+'/gal/cfg.json?auth='+id);
+  if(r.status===401||r.status===403){await galPair(id);return}
+  const c=await r.json();
+  if(!c||!c.on||!c.key||!c.folder){GAL.st='msg';GAL.msg=c&&c.on===false?'Galeri sedang dinonaktifkan oleh orang tua.':'Galeri belum diatur di admin.';draw();return}
+  GAL.cfg=c;GAL.items=[];GAL.next='';await galFetch()}
+ catch(e){GAL.st='msg';GAL.msg='Galeri tidak bisa dimuat. Cek internet.';draw()}}
+async function galPair(id){let code=J('gcode','');if(!code){code=String(100000+Math.floor(Math.random()*900000));localStorage.setItem('gcode',JSON.stringify(code))}
+ await fetch(DB+'/pair/'+GA.uid+'.json?auth='+id,{method:'PUT',body:JSON.stringify({code,ts:Date.now()})});
+ GAL.st='pair';GAL.code=code;draw();clearInterval(gT);
+ gT=setInterval(async()=>{if(view!=='gal'||GAL.st!=='pair'){clearInterval(gT);return}try{const i2=await gAuth(),r=await fetch(DB+'/gal/cfg.json?auth='+i2);if(r.ok){clearInterval(gT);galOpen()}}catch(e){}},5000)}
+async function galFetch(){const c=GAL.cfg,q="'"+c.folder+"' in parents and trashed=false and (mimeType contains 'image/' or mimeType contains 'video/')";
+ const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&orderBy='+encodeURIComponent('createdTime desc')+'&pageSize=48&fields='+encodeURIComponent('nextPageToken,files(id,name,mimeType,thumbnailLink)')+'&key='+encodeURIComponent(c.key)+(GAL.next?'&pageToken='+encodeURIComponent(GAL.next):''));
+ if(!r.ok){GAL.st='msg';GAL.msg='Galeri tidak bisa dibuka (kode '+r.status+'). Periksa kunci API dan pembagian folder di admin.';draw();return}
+ const j=await r.json();GAL.items=GAL.items.concat(j.files||[]);GAL.next=j.nextPageToken||'';GAL.st=GAL.items.length?'list':'msg';if(!GAL.items.length)GAL.msg='Folder masih kosong.';draw()}
+function drawGal(){const a=$('#app'),bk='<button class="c b" data-back>‹ Kembali</button>';
+ if(GAL.st==='load')a.innerHTML=bk+'<h1>🖼️ Galeri</h1><p style="font-size:3.4vh">Memuat...</p>';
+ else if(GAL.st==='pair')a.innerHTML=bk+`<h1>🔒 Galeri belum disetujui</h1><p style="font-size:3.4vh;line-height:1.4">Minta orang tua membuka halaman Admin → Penilaian → Galeri, lalu menyetujui kode ini:</p><div class="bigst" style="font-size:14vh;letter-spacing:2vh">${esc(GAL.code)}</div><button class="c b" data-gchk>🔄 Cek lagi</button>`;
+ else if(GAL.st==='msg')a.innerHTML=bk+`<h1>🖼️ Galeri</h1><p style="font-size:3.4vh">${esc(GAL.msg)}</p>`;
+ else a.innerHTML=bk+'<h1>🖼️ Galeri</h1><div class="g">'+GAL.items.map((x,i)=>`<button class="c v" data-gi="${i}" style="position:relative"><img loading="lazy" decoding="async" src="${gTh(x,320)}" alt="">${/^video/.test(x.mimeType)?'<em style="left:0;bottom:0">▶ Video</em>':''}</button>`).join('')+'</div>'+(GAL.next?'<button class="c b" data-gmore style="margin-top:3vh">Muat lagi</button>':'');
+ const f=a.querySelector('.c');if(f)f.focus()}
+function drawGv(){const x=GAL.items[GAL.idx];if(!x){view='gal';draw();return}const vd=/^video/.test(x.mimeType);
+ $('#app').innerHTML=`<div class="gv">${vd?`<video id="gvd" src="${gVid(x)}" autoplay playsinline></video>`:`<img src="${gTh(x,1600)}" alt="">`}<div class="gc"><button class="c" data-back>‹ Kembali</button><button class="c" data-gprev>◀</button><button class="c" data-gnext>▶</button>${vd?'<button class="c" data-gpp>⏸ Jeda</button>':''}</div></div>`;
+ const n=document.querySelector('.gc [data-gnext]');if(n)n.focus()}
+function galView(i){GAL.idx=i;view='galv';draw()}
+function galStep(d){galStop();GAL.idx=(GAL.idx+d+GAL.items.length)%GAL.items.length;drawGv()}
+function galPP(){const v=document.getElementById('gvd'),b=document.querySelector('[data-gpp]');if(!v||!b)return;if(v.paused)v.play();else v.pause();b.textContent=v.paused?'▶ Lanjut':'⏸ Jeda'}
+function galStop(){const v=document.getElementById('gvd');if(v){try{v.pause();v.removeAttribute('src');v.load()}catch(e){}}}
+function galLeave(){clearInterval(gT);GAL.items=[];GAL.next=''}
+/* GAL-END */
 document.body.classList.toggle('lite',!!A.lite);hadKids=ls(A.kids).length>0;if(FB_ON){pull();conn();setInterval(()=>{if(Date.now()-sseT>90000)pull()},30000);setInterval(pull,600000)}
 addEventListener('pagehide',sv);
 for(let i=0;i<5;i++)history.pushState(null,'');addEventListener('popstate',()=>{history.pushState(null,'')});
