@@ -3,8 +3,8 @@
  "settings": {
   "mode": "duration",
   "start": "06:00",
-  "minutes": 60,
-  "reset": 10
+  "minutes": 90,
+  "reset": 11
  },
  "folders": [
   {
