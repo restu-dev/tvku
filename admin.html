@@ -148,17 +148,20 @@ const monday=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.se
 const ls=o=>Object.entries(o||{}).map(([id,v])=>({id,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
 const acts=k=>ls(A.activities).filter(a=>a.kids==='all'||(a.kids&&a.kids[k]));
 const scOf=(k,d)=>(A.scores&&A.scores[k]&&A.scores[k][d])||{};
-const dayTot=(k,d)=>{const s=scOf(k,d);return acts(k).reduce((n,a)=>n+Math.min(+s[a.id]||0,a.max||3),0)};
+const baseTot=(k,d)=>{const s=scOf(k,d);return acts(k).reduce((n,a)=>n+Math.min(+s[a.id]||0,a.max||3),0)};
+const penTot=(k,d)=>Object.values(((A.penalties||{})[k]||{})[d]||{}).reduce((n,p)=>n+(+p.n||0),0);
+const dayTot=(k,d)=>Math.max(0,baseTot(k,d)-penTot(k,d));
 const wdays=()=>{const m=monday(new Date());return Array.from({length:7},(_,i)=>{const x=new Date(m);x.setDate(m.getDate()+i);return x})};
 const weekTot=k=>wdays().reduce((n,x)=>n+dayTot(k,ds(x)),0);
 const AIC=['🪥','🚿','🛁','🧼','🧴','🥦','🥕','🍎','🍌','🍽️','🥛','💧','🍚','🥗','🍞','🥚','🍊','🍉','🍇','🧸','🧹','🧺','👕','👟','🎒','🛏️','😴','🌙','⏰','📖','📚','✏️','🖍️','🎨','✂️','🧩','🎵','🎹','🎤','🕌','🤲','🙏','📿','☪️','🕋','🤝','❤️','💬','😊','🎁','🏃','⚽','🚲','🏊','🧘','🤸','🌳','🌻','🌱','🐱','🐶','🐟','🐔','🚰','🧻','🚽','🧽','🛒','📝','🔢','🔤','📏','🎬','🧃','🍪','🏠','🚗','👶','🙌','💪','⭐','🌟','🏆','🔔','🍳','🥣','🧊','🚶','🪑','🧦'];
+const GMS=[['abjad1','🔊 Dengar Huruf (abjad)'],['abjad2','🍎 Huruf Awal (abjad)'],['angka1','⭐ Hitung Bintang (angka)'],['angka2','🔊 Dengar Angka (angka)'],['hij1','ب Kenali Huruf (hijaiyah)']],PEN=['Tidak merapikan mainan','Berkata kasar','Berebut atau memukul','Tidak mau mendengarkan'];
 const HJN=['Alif','Ba','Ta','Tsa','Jim','Ha','Kho','Dal','Dzal','Ra','Zai','Sin','Syin','Shad','Dhad','Tha','Zha','Ain','Ghain','Fa','Qaf','Kaf','Lam','Mim','Nun','Wau','Ha','Ya'],HJG='ابتثجحخدذرزسشصضطظعغفقكلمنوهي';
 const ref=p=>db.ref('app/'+p),TS=()=>firebase.database.ServerValue.TIMESTAMP;
 const ava=k=>{const p=PH[k.id];return p?`<img class="avt" src="${p}" alt="">`:`<span class="avt">${esc((k.name||'?')[0])}</span>`};
 day0=ds(new Date());
 
 let cleaned=false;
-function autoClean(){if(cleaned)return;cleaned=true;const cut=ds(new Date(Date.now()-60*864e5)),u={};let n=0;['scores','praise'].forEach(p=>Object.keys(A[p]||{}).forEach(k=>Object.keys(A[p][k]||{}).forEach(x=>{if(x<cut){u[p+'/'+k+'/'+x]=null;n++}})));if(n)ref('').update(u)}
+function autoClean(){if(cleaned)return;cleaned=true;const cut=ds(new Date(Date.now()-60*864e5)),u={};let n=0;['scores','praise','penalties'].forEach(p=>Object.keys(A[p]||{}).forEach(k=>Object.keys(A[p][k]||{}).forEach(x=>{if(x<cut){u[p+'/'+k+'/'+x]=null;n++}})));if(n)ref('').update(u)}
 function lkUI(){$('glite').checked=!!(FBOK&&A.lite);$('glite').disabled=!FBOK;$('gln').textContent=FBOK?(auth&&auth.currentUser?'Berlaku di TV dalam beberapa detik.':'Masuk Firebase di tab ⭐ Penilaian agar pengaturan ini tersimpan.'):'Perlu Firebase (lihat PANDUAN-FIREBASE.md).';
  const L=FBOK?(A.lock||{}):D.lock;$('lkb').className='lkb '+(L.on?'on':'off');$('lkb').textContent=L.on?'🔒 TV DIKUNCI. Tekan untuk membuka':'🔓 TV tidak dikunci. Tekan untuk mengunci';
  if(document.activeElement!==$('lkm'))$('lkm').value=L.msg||'';$('lks').checked=L.speak!==false;
@@ -180,11 +183,15 @@ $('fp').onkeydown=e=>{if(e.key==='Enter')$('fgo').click()};
 function R(){if(!$('fbon').hidden)({td:rTd,tk:rTk,ta:rTa,tr:rTr,th:rTh,tg:rTg,tq:rTq,tl:rTl})[stab]()}
 const none='<small>Belum ada data.</small>';
 
+function penBlock(k,d){const L=Object.entries(((A.penalties||{})[k.id]||{})[d]||{});
+ return `<div class="r" style="margin-top:12px"><b>➖ Kurangi bintang</b></div><div class="r"><input class="w" data-prs="${k.id}" placeholder="Pelanggaran (dibacakan di TV)"><select data-pn="${k.id}"><option>1</option><option>2</option><option>3</option></select><button class="x" data-act="pen" data-k="${k.id}">Kurangi</button></div>
+ <div class="r">${PEN.map(x=>`<button class="chip" data-act="penp" data-k="${k.id}" data-t="${esc(x)}">${esc(x)}</button>`).join('')}</div>`+
+ L.map(([id,p])=>`<div class="v"><span>➖${p.n} ${esc(p.reason||'')}</span><div><button class="x" data-act="pdel" data-k="${k.id}" data-p="${id}">✕</button></div></div>`).join('')}
 function rTd(){const ks=ls(A.kids).filter(k=>k.active!==false),d=day0;
- $('td').innerHTML=`<h2>Penilaian</h2><div class="r"><label>Tanggal <input type="date" id="dd" value="${d}" max="${ds(new Date())}"></label></div><small>Ketuk bintang untuk menilai. Ketuk bintang yang sama untuk menghapus. Penilaian hari ini langsung tampil di TV.</small>`+
+ $('td').innerHTML=`<h2>Penilaian</h2><div class="r"><label>Tanggal <input type="date" id="dd" value="${d}" max="${ds(new Date())}"></label></div><small>Ketuk bintang untuk menilai. Ketuk bintang yang sama untuk menghapus. Penilaian hari ini langsung tampil di TV. Pengurangan bintang dibacakan TV bersama pelanggarannya.</small>`+
  (ks.length?ks.map(k=>{const ac=acts(k.id),s=scOf(k.id,d);return `<div class="fo"><div class="fh">${ava(k)}<b style="flex:1">${esc(k.name)}</b><span>⭐ ${dayTot(k.id,d)}</span></div>`+
   (ac.map(a=>{const v=Math.min(+s[a.id]||0,a.max||3);return `<div class="v"><span>${esc(a.icon||'⭐')} ${esc(a.name)}</span><div>`+Array.from({length:a.max||3},(_,i)=>`<button class="sb${i<v?' on':''}" data-act="star" data-k="${k.id}" data-a="${a.id}" data-n="${i+1}">${i<v?'⭐':'☆'}</button>`).join('')+'</div></div>'}).join('')||'<small>Belum ada kegiatan untuk anak ini (tab Kegiatan).</small>')+
-  `<div class="r"><input class="w" data-pr="${k.id}" value="${esc(((A.praise||{})[k.id]||{})[d]||'')}" placeholder="Pujian hari ini (dibacakan di TV)"></div></div>`}).join(''):'<small>Belum ada anak. Tambahkan di tab Anak.</small>')}
+  `<div class="r"><input class="w" data-pr="${k.id}" value="${esc(((A.praise||{})[k.id]||{})[d]||'')}" placeholder="Pujian hari ini (dibacakan di TV)"></div>${penBlock(k,d)}</div>`}).join(''):'<small>Belum ada anak. Tambahkan di tab Anak.</small>')}
 
 function rTk(){$('tk').innerHTML='<h2>Anak</h2><div class="r"><input class="w" id="kn" placeholder="Nama panggilan"><button data-act="kadd">Tambah anak</button></div>'+
  (ls(A.kids).map(k=>`<div class="fo"><div class="fh">${ava(k)}<input class="w" data-kn="${k.id}" value="${esc(k.name)}"><button class="m" data-act="kup" data-id="${k.id}">▲</button><button class="m" data-act="kdn" data-id="${k.id}">▼</button><button class="x" data-act="kdel" data-id="${k.id}">Hapus</button></div>
@@ -230,7 +237,7 @@ function rTq(){const its=ls(A.murotal),on=A.murotalOn!==false,src=A.murotalSourc
  <small>Tempel link YouTube murotal. Diputar otomatis dan berulang, berhenti sebentar saat Anda memberi penilaian, lalu lanjut.</small>
  <div class="r"><input class="w" id="ql" placeholder="Tempel link YouTube murotal"><button data-act="qadd">Tambah</button></div>`+
  (its.map(x=>`<div class="v"><span>🎧 ${esc(x.title||x.vid)}</span><div><button class="m" data-act="qup" data-id="${x.id}">▲</button><button class="m" data-act="qdn" data-id="${x.id}">▼</button><button class="x" data-act="qdel" data-id="${x.id}">✕</button></div></div>`).join('')||'<div class="v"><small>Belum ada murotal.</small></div>')}
-function rTgx(g){const au=g.audio||{};return `<h2>Permainan Angka</h2><div class="r"><label class="chk"><input type="checkbox" id="gn1"${g.num1===false?'':' checked'}> Angka 1 sampai 10</label><label class="chk"><input type="checkbox" id="gn2"${g.num2?' checked':''}> Angka 11 sampai 20</label></div><small>Soal di TV memakai rentang yang dicentang (boleh keduanya).</small>
+function rTgx(g){const au=g.audio||{},en=g.enabled||{};return `<h2>Permainan yang aktif</h2><small>Hanya permainan yang dicentang yang tampil di TV. Cocok untuk memilihkan permainan yang harus dimainkan anak saat ini.</small><div class="r" style="flex-direction:column;align-items:flex-start">${GMS.map(([id,n])=>`<label class="chk"><input type="checkbox" data-gen="${id}"${en[id]===false?'':' checked'}> ${n}</label>`).join('')}</div><hr style="border:0;border-top:1px solid #ddd;margin:16px 0"><h2>Permainan Angka</h2><div class="r"><label class="chk"><input type="checkbox" id="gn1"${g.num1===false?'':' checked'}> Angka 1 sampai 10</label><label class="chk"><input type="checkbox" id="gn2"${g.num2?' checked':''}> Angka 11 sampai 20</label></div><small>Soal di TV memakai rentang yang dicentang (boleh keduanya).</small>
  <h2 style="margin-top:18px">Suara huruf hijaiyah</h2><small>Unggah MP3 pendek (1-3 detik, maksimal 150 KB) berisi lafal tiap huruf. Huruf tanpa file memakai suara mesin.</small>`+
  HJN.map((n,i)=>`<div class="v"><span><b style="font-size:24px">${HJG[i]}</b> ${n} ${au[i]?'✓':''}</span><div>${au[i]?`<button class="m" data-act="aplay" data-i="${i}">▶</button>`:''}<input type="file" accept="audio/*" data-af="${i}" style="max-width:140px">${au[i]?`<button class="x" data-act="adelau" data-i="${i}">✕</button>`:''}</div></div>`).join('')+
 
@@ -240,8 +247,8 @@ function rTg(){const g=A.game||{},its=ls(g.items);$('tg').innerHTML=rTgx(g)+`<h2
  <div class="r"><input class="w" id="gw" placeholder="Nama benda, misalnya Xilofon"><input id="ge" placeholder="Emoji (opsional)" style="width:140px"></div>
  <div class="r"><input type="file" id="gf" accept="image/*"><button data-act="gadd">Tambah</button></div><small>Isi emoji atau pilih foto. Huruf awal diambil dari huruf pertama nama benda.</small>`+
  (its.map(x=>{const p=PH['g_'+x.id];return `<div class="v"><span>${p?`<img class="avt" src="${p}" alt="">`:esc(x.emoji||'')} ${esc(x.word)} &rarr; <b>${esc((x.word||'').trim().charAt(0).toUpperCase())}</b></span><div><button class="x" data-act="gdel" data-id="${x.id}">✕</button></div></div>`}).join('')||'<div class="v"><small>Belum ada gambar tambahan.</small></div>')}
-function setScore(k,a,d,n){const cur=+scOf(k,d)[a]||0,before=dayTot(k,d),r=ref(`scores/${k}/${d}/${a}`);n?r.set(n):r.remove();
- if(n>cur&&d===ds(new Date())){const kid=A.kids[k],ac=A.activities[a],tot=before-cur+n;ref('events/last').set({kid:k,stars:n,ts:TS(),text:`Hebat, ${kid.name}! ${ac.name} dapat ${n} bintang. Hari ini sudah ${tot} bintang!`})}}
+function setScore(k,a,d,n){const cur=+scOf(k,d)[a]||0,bt=baseTot(k,d),r=ref(`scores/${k}/${d}/${a}`);n?r.set(n):r.remove();
+ if(n>cur&&d===ds(new Date())){const kid=A.kids[k],ac=A.activities[a],tot=Math.max(0,bt-cur+n-penTot(k,d));ref('events/last').set({kid:k,stars:n,ts:TS(),text:`Hebat, ${kid.name}! ${ac.name} dapat ${n} bintang. Hari ini sudah ${tot} bintang!`})}}
 function mv(path,list,id,dir){const i=list.findIndex(x=>x.id===id),j=i+dir;if(j<0||j>=list.length)return;const a=list[i],b=list[j],u={};u[a.id+'/order']=b.order||j;u[b.id+'/order']=a.order||i;if(u[a.id+'/order']===u[b.id+'/order'])u[a.id+'/order']=u[b.id+'/order']+dir;ref(path).update(u)}
 function pic(file,cb){const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=256;c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);URL.revokeObjectURL(u);cb(c.toDataURL('image/jpeg',.75))};im.src=u}
 
@@ -265,6 +272,9 @@ $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;cons
  else if(a==='qdel'){if(confirm('Hapus murotal ini?'))ref('murotal/'+d.id).remove()}
  else if(a==='qtog'){ref('murotalOn').set(A.murotalOn===false)}
  else if(a==='qrsave'){ref('radio').set($('qr').value.trim())}
+ else if(a==='penp'){document.querySelector('[data-prs="'+d.k+'"]').value=d.t}
+ else if(a==='pen'){const why=document.querySelector('[data-prs="'+d.k+'"]').value.trim(),n=+document.querySelector('[data-pn="'+d.k+'"]').value||1;if(!why)return alert('Tulis pelanggarannya dulu.');ref(`penalties/${d.k}/${day0}`).push({n,reason:why,ts:TS()});if(day0===ds(new Date()))ref('events/last').set({kid:d.k,neg:n,stars:0,ts:TS(),text:`${A.kids[d.k].name}, bintang berkurang ${n} karena ${why}. Ayo perbaiki ya.`})}
+ else if(a==='pdel')ref(`penalties/${d.k}/${day0}/${d.p}`).remove()
  else if(a==='ltog'){db.ref('gal/cfg/on').set(!(GL.cfg&&GL.cfg.on))}
  else if(a==='lsave'){const key=$('dk').value.trim(),fid=dfId($('df').value.trim());if(!key||!fid)return alert('Isi kunci API dan link folder yang benar.');db.ref('gal/cfg').set({key,folder:fid,on:!GL.cfg||GL.cfg.on!==false})}
  else if(a==='ltest')lTest();
@@ -274,7 +284,7 @@ $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;cons
  else if(a==='adelau'){if(confirm('Hapus suara huruf ini?')){ref('game/audio/'+d.i).remove();db.ref('photos/a_'+d.i).remove()}}
  else if(a==='gadd'){const w=$('gw').value.trim(),em=$('ge').value.trim(),f=$('gf').files[0];if(!/^[A-Za-z]/.test(w))return alert('Nama benda harus diawali huruf A sampai Z.');if(!em&&!f)return alert('Isi emoji atau pilih foto.');const id=ref('game/items').push().key;await ref('game/items/'+id).set({word:w,emoji:em,order:Date.now(),photoV:0});if(f)pic(f,url=>db.ref('photos/g_'+id).set(url).then(()=>ref('game/items/'+id+'/photoV').set(Date.now())))}
  else if(a==='gdel'){if(confirm('Hapus gambar ini?')){ref('game/items/'+d.id).remove();db.ref('photos/g_'+d.id).remove()}}
- else if(a==='clean'){const cut=ds(new Date(Date.now()-60*864e5)),u={};let n=0;['scores','praise'].forEach(p=>Object.keys(A[p]||{}).forEach(k=>Object.keys(A[p][k]).forEach(x=>{if(x<cut){u[p+'/'+k+'/'+x]=null;n++}})));if(n)await ref('').update(u);alert(n+' data lama dibersihkan.')}};
+ else if(a==='clean'){const cut=ds(new Date(Date.now()-60*864e5)),u={};let n=0;['scores','praise','penalties'].forEach(p=>Object.keys(A[p]||{}).forEach(k=>Object.keys(A[p][k]).forEach(x=>{if(x<cut){u[p+'/'+k+'/'+x]=null;n++}})));if(n)await ref('').update(u);alert(n+' data lama dibersihkan.')}};
 
 $('fbon').onchange=e=>{const t=e.target,d=t.dataset,td=ds(new Date());
  if(t.id==='dd'){day0=t.value||td;R()}
@@ -287,6 +297,7 @@ $('fbon').onchange=e=>{const t=e.target,d=t.dataset,td=ds(new Date());
  else if(d.an)ref('activities/'+d.an+'/name').set(t.value.trim()||'Kegiatan');
  else if(d.am)ref('activities/'+d.am+'/max').set(+t.value);
  else if(d.ak){const a=A.activities[d.a];let cur=a.kids==='all'?Object.fromEntries(ls(A.kids).map(k=>[k.id,true])):{...(a.kids||{})};t.checked?cur[d.ak]=true:delete cur[d.ak];const all=ls(A.kids).every(k=>cur[k.id]);ref('activities/'+d.a+'/kids').set(all?'all':(Object.keys(cur).length?cur:null))}
+ else if(d.gen!==undefined)ref('game/enabled/'+d.gen).set(t.checked)
  else if(t.name==='qs')ref('murotalSource').set(t.value)
  else if(t.id==='gdef')ref('game/useDefault').set(t.checked)
  else if(t.id==='gn1')ref('game/num1').set(t.checked)

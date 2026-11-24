@@ -103,6 +103,8 @@ body.lite .st{display:none}body.lite *{animation:none!important;transition:none!
 .gv img,.gv video{max-width:100vw;max-height:100vh;object-fit:contain}
 .gc{position:absolute;bottom:3vh;left:50%;transform:translateX(-50%);display:flex;gap:2vw}.gc .c{padding:1.4vh 2.6vw;font-size:3vh;font-weight:700;background:#000c;text-align:center}
 .g .v em{position:absolute}
+.vtop{display:flex;gap:2vw;align-items:center;margin-bottom:2vh;flex-wrap:wrap}.vtop .b{margin:0}.pgi{font-size:2.8vh;font-weight:700;opacity:.9}
+.c:disabled{opacity:.3;cursor:default}.mn{font-size:2.6vh;margin-left:.8vw;color:#b3261e}
 </style></head><body>
 <div id="app"></div>
 <div id="pl"><div id="player"></div><div id="sh"></div></div>
@@ -111,7 +113,7 @@ body.lite .st{display:none}body.lite *{animation:none!important;transition:none!
 <script src="firebase-config.js"></script>
 <script>
 const WARN=[10,5,1];
-let D={folders:[],settings:{mode:'off'},child:{},lock:{}},lastTxt='',lkT=null,lkKey='',view='welcome',fi=0,Q=[],qi=0,P=null,locked=false,tu=false,mur=false,alO=[],vPrev=true,paused=false,fired={},actx=null;
+let D={folders:[],settings:{mode:'off'},child:{},lock:{}},lastTxt='',lkT=null,lkKey='',view='welcome',fi=0,Q=[],qi=0,P=null,locked=false,tu=false,mur=false,vpg=0,vkeep=null,hadGames=true,alO=[],vPrev=true,paused=false,fired={},actx=null;
 const $=s=>document.querySelector(s),day=()=>new Date().toDateString();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const J=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
@@ -178,12 +180,14 @@ function draw(){const a=$('#app');if(view!=='stars')mwOff();if(view==='stars'){d
  else if(view==='folders'){const L=J('last',null);let rs='';
   if(L&&D.folders[L.f]){const v=D.folders[L.f].videos.findIndex(x=>x.id===L.id);if(v>=0)rs=`<button class="c f rs" data-r="${L.f}.${v}">▶ Lanjutkan: ${esc(D.folders[L.f].videos[v].title)}</button>`}
   a.innerHTML='<h1>Pilih folder</h1><div class="g">'+rs+starCard()+gameCard()+galCard()+(D.folders.length?D.folders.map((f,i)=>`<button class="c f" style="--bg:${esc(f.color||'#2a2466')}" data-f="${i}"><i>${esc(f.icon||'📁')}</i>${esc(f.name)}<small>${f.videos.length} video</small></button>`).join(''):'<p>Belum ada folder. Tambahkan lewat halaman Admin.</p>')+'</div>'}
- else{const f=D.folders[fi];a.innerHTML=`<button class="c b" data-back>‹ Kembali</button><h1>${esc(f.icon||'')} ${esc(f.name)}</h1>${vb()}<div class="g">`+f.videos.map((v,i)=>`<button class="c v${v.bad?' bad':''}" data-v="${i}"><img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt=""><span>${esc(v.title)}</span>${isBad(v)?'<em>⚠ Tidak bisa diputar</em>':''}</button>`).join('')+'</div>'}
- const first=a.querySelector('.c');if(first)first.focus()}
+ else{const f=D.folders[fi],PG=8,n=f.videos.length,pages=Math.max(1,Math.ceil(n/PG));vpg=Math.min(Math.max(vpg,0),pages-1);
+  const nv=pages>1?`<span class="pgi">Halaman ${vpg+1} / ${pages}</span><button class="c b" data-vp="-1"${vpg?'':' disabled'}>◀ Sebelumnya</button><button class="c b" data-vp="1"${vpg<pages-1?'':' disabled'}>Berikutnya ▶</button>`:'';
+  a.innerHTML=`<div class="vtop"><button class="c b" data-back>‹ Kembali</button>${nv}</div><h1>${esc(f.icon||'')} ${esc(f.name)}</h1>${vb()}<div class="g">`+f.videos.slice(vpg*PG,vpg*PG+PG).map((v,j)=>{const i=vpg*PG+j;return `<button class="c v${v.bad?' bad':''}" data-v="${i}"><img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt=""><span>${esc(v.title)}</span>${isBad(v)?'<em>⚠ Tidak bisa diputar</em>':''}</button>`}).join('')+'</div>'}
+ let first=null;if(vkeep){first=a.querySelector(vkeep+':not([disabled])')||a.querySelector('[data-vp]:not([disabled])')}vkeep=null;first=first||a.querySelector('.c:not([disabled])');if(first)first.focus()}
 
 $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const d=b.dataset;
  if(d.go!==undefined){view='folders';draw()}
- else if(d.r){const[x,y]=d.r.split('.');fi=+x;play(+y)}
+ else if(d.r){const[x,y]=d.r.split('.');fi=+x;vpg=Math.floor(+y/8);play(+y)}
  else if(d.s!==undefined){view='stars';draw()}
  else if(d.pg!==undefined){view='games';draw()}
  else if(d.gal!==undefined||d.gchk!==undefined)galOpen()
@@ -196,7 +200,8 @@ $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const 
  else if(d.gm!==undefined)startGame(d.gm)
  else if(d.ch!==undefined)answer(+d.ch)
  else if(d.rp!==undefined){if(G)sayQ(G.q)}
- else if(d.f!==undefined){fi=+d.f;view='videos';draw()}
+ else if(d.f!==undefined){fi=+d.f;vpg=0;view='videos';draw()}
+ else if(d.vp!==undefined){vkeep='[data-vp="'+d.vp+'"]';vpg+=+d.vp;draw()}
  else if(d.v!==undefined)play(+d.v);else back()};
 
 function sl(){if(mur)return;localStorage.setItem('last',JSON.stringify({f:fi,id:Q[qi].id}))}
@@ -244,7 +249,8 @@ const lk=()=>FB_ON?(A.lock||{}):(D.lock||{});
 const kidsOn=()=>ls(A.kids).filter(k=>k.active!==false);
 const acts=k=>ls(A.activities).filter(a=>a.kids==='all'||(a.kids&&a.kids[k]));
 const scOf=(k,d)=>(A.scores&&A.scores[k]&&A.scores[k][d])||{};
-const dayTot=(k,d)=>{const s=scOf(k,d);return acts(k).reduce((n,a)=>n+Math.min(+s[a.id]||0,a.max||3),0)};
+const penTot=(k,d)=>Object.values((A.penalties&&A.penalties[k]&&A.penalties[k][d])||{}).reduce((n,p)=>n+(+p.n||0),0);
+const dayTot=(k,d)=>{const s=scOf(k,d);return Math.max(0,acts(k).reduce((n,a)=>n+Math.min(+s[a.id]||0,a.max||3),0)-penTot(k,d))};
 const wdays=()=>{const m=monday(new Date());return Array.from({length:7},(_,i)=>{const x=new Date(m);x.setDate(m.getDate()+i);return x})};
 const weekTot=k=>wdays().reduce((n,x)=>n+dayTot(k,ds(x)),0);
 const rewOf=k=>ls(A.rewards).find(r=>r.kid===k||r.kid==='all');
@@ -256,20 +262,21 @@ async function pull(){if(!FB_ON)return;try{const r=await fetch(DB+'/app.json?_='
 function conn(){if(!FB_ON||!window.EventSource)return;try{const es=new EventSource(DB+'/app.json'),tk=()=>{sseT=Date.now()},h=()=>{tk();clearTimeout(pT);pT=setTimeout(pull,300)};es.onopen=tk;es.addEventListener('keep-alive',tk);es.addEventListener('put',h);es.addEventListener('patch',h)}catch(e){}}
 function onData(){document.body.classList.toggle('lite',!!A.lite);const e=A.events&&A.events.last;if(e&&e.ts){if(seenTs===null)seenTs=e.ts;else if(e.ts!==seenTs){seenTs=e.ts;cele(e)}}
  const hk=kidsOn().length>0;if(view==='stars')drawStars();
- else if(view==='folders'){if(hk!==hadKids){hadKids=hk;draw()}else{const el=document.querySelector('.sc');if(el)el.innerHTML=scTxt()}}}
+ else if(view==='games')drawGames();
+ else if(view==='folders'){const ga=Object.keys(GAMES).some(gOn);if(hk!==hadKids||ga!==hadGames){hadKids=hk;hadGames=ga;draw()}else{const el=document.querySelector('.sc');if(el)el.innerHTML=scTxt()}}}
 
 function scTxt(){const t=ds(new Date());return kidsOn().map(k=>esc(k.name)+' '+dayTot(k.id,t)+'⭐').join(' · ')}
 function starCard(){const ks=kidsOn();if(!FB_ON||!ks.length)return '';
  return `<button class="c f" style="--bg:linear-gradient(135deg,#ff9f1c,#e4572e)" data-s><i>⭐</i>Bintang Hebat<small class="sc">${scTxt()}</small></button>`}
 
-function panel(k,t){const ac=acts(k.id),s=scOf(k.id,t),tot=dayTot(k.id,t),wt=weekTot(k.id),rw=rewOf(k.id),mon=ds(monday(new Date()));
+function panel(k,t){const ac=acts(k.id),s=scOf(k.id,t),tot=dayTot(k.id,t),pn=penTot(k.id,t),wt=weekTot(k.id),rw=rewOf(k.id),mon=ds(monday(new Date()));
  const cl=rw&&A.claimed&&A.claimed[rw.id]&&A.claimed[rw.id][k.id]&&A.claimed[rw.id][k.id][mon],pct=rw?Math.min(100,Math.round(wt/rw.target*100)):0,done=rw&&wt>=rw.target;
  const ph=PH[k.id]&&PH[k.id].src,pr=(A.praise&&A.praise[k.id]&&A.praise[k.id][t])||'',mx=ac.reduce((n,x)=>n+(x.max||3),0)||1,td=new Date();
  const cells=ac.map(x=>{const v=Math.min(+s[x.id]||0,x.max||3),key=k.id+'|'+t+'|'+x.id,up=v>(PS[key]||0);PS[key]=v;
   return `<div class="ac${v?' on':''}${up?' pop':''}"><b>${esc(x.icon||'⭐')}</b><span>${Array.from({length:x.max||3},(_,i)=>i<v?'⭐':'☆').join('')}</span></div>`}).join('');
  const wk=wdays().map((x,i)=>{const dd=ds(x),n=dayTot(k.id,dd),fut=x>td;
   return `<div class="wd${dd===t?' me':''}${fut?' fu':''}"><i style="height:${fut?4:Math.max(4,Math.round(n/mx*100))}%"></i><span>${'SSRKJSM'[i]}</span><em>${fut?'':n}</em></div>`}).join('');
- return `<div class="kp" style="--kc:${esc(k.color||'#7b2cbf')}"><div class="kh">${ph?`<img class="pf" src="${ph}" alt="">`:`<div class="pf pn">${esc((k.name||'?')[0])}</div>`}<div class="kn"><h2>${esc(k.name)}</h2><small>Hari ini</small></div><div class="kt">⭐<span class="cnt" data-n="${tot}">0</span></div></div>
+ return `<div class="kp" style="--kc:${esc(k.color||'#7b2cbf')}"><div class="kh">${ph?`<img class="pf" src="${ph}" alt="">`:`<div class="pf pn">${esc((k.name||'?')[0])}</div>`}<div class="kn"><h2>${esc(k.name)}</h2><small>Hari ini</small></div><div class="kt">⭐<span class="cnt" data-n="${tot}">0</span>${pn?`<small class="mn">−${pn}</small>`:''}</div></div>
 <div class="acs">${cells||'<small>Belum ada kegiatan.</small>'}</div>
 ${rw?`<div class="rw${done?' dn':''}"><div class="bar"><i style="width:${pct}%"></i><span class="walk" style="left:${pct}%">🏃</span><span class="gl">${esc(rw.icon||'🎁')}</span></div><div class="rt">${done?(cl?'✓ Hadiah sudah diterima: ':'🎉 Hadiah tercapai! ')+esc(rw.title):esc(rw.title)+' · '+wt+'/'+rw.target+' ⭐'}</div></div>`:''}
 <div class="wk">${wk}</div>${pr?`<div class="pr">💬 ${esc(pr)}</div>`:''}</div>`}
@@ -282,8 +289,12 @@ function drawStars(){const a=$('#app'),ks=kidsOn(),t=ds(new Date());
 function confetti(n){const o=$('#cf');o.innerHTML='';const em=['⭐','✨','🎉','🌟','💛'];for(let i=0;i<n;i++){const s=document.createElement('span');s.textContent=em[i%5];s.style.cssText=`left:${Math.random()*100}%;font-size:${3+Math.random()*4}vh;animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*1.2}s`;o.appendChild(s)}}
 function fan(){if(!actx)return;const t=actx.currentTime;[523,659,784,1047,1319].forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),s=t+i*.14;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.3,s);g.gain.exponentialRampToValueAtTime(.001,s+.4);o.connect(g);g.connect(actx.destination);o.start(s);o.stop(s+.45)})}
 function cele(e){if(locked)return;const k=ls(A.kids).find(x=>x.id===e.kid);if(!k)return;
- if(view==='play'){const n=$('#note');n.textContent='⭐ '+(e.text||'Hebat!');n.style.display='block';fan();setTimeout(()=>n.style.display='none',6000);return}
+ if(view==='play'&&!e.neg){const n=$('#note');n.textContent='⭐ '+(e.text||'Hebat!');n.style.display='block';fan();setTimeout(()=>n.style.display='none',6000);return}
  const ph=PH[k.id]&&PH[k.id].src,o=$('#ce');celeN++;mwHold();
+ if(e.neg){const wv=view==='play'&&P&&!paused;if(wv){try{P.pauseVideo()}catch(x){}}
+  o.innerHTML=`<div class="cb">${ph?`<img class="pf big2" src="${ph}" alt="">`:''}<div class="bigst" style="animation:none;color:#ffb4a9;font-size:14vh">−${e.neg} ⭐</div><div class="ct">${esc(e.text||'')}</div></div>`;
+  o.style.display='flex';tone(2,330);setTimeout(()=>say(e.text),700);
+  setTimeout(()=>{o.style.display='none';celeN=Math.max(0,celeN-1);if(!celeN)mwRes();if(wv&&view==='play'&&!paused){try{P.playVideo()}catch(x){}}},6500);return}
  o.innerHTML=`<div class="cb">${ph?`<img class="pf big2" src="${ph}" alt="">`:''}<div class="bigst">${e.stars?'⭐'.repeat(Math.min(e.stars,3)):'💌'}</div><div class="ct">${esc(e.text||'Hebat!')}</div></div>`;
  o.style.display='flex';confetti(45);fan();setTimeout(()=>say(e.text),900);setTimeout(()=>{o.style.display='none';$('#cf').innerHTML='';celeN=Math.max(0,celeN-1);if(!celeN)mwRes()},7500)}
 /* BH-END */
@@ -326,6 +337,7 @@ function mwRes(){if(view==='stars'&&!mwPaused&&!locked&&!celeN){if(murMode()==='
 /* GAME-START: Permainan belajar */
 const CATS=[{id:'abjad',t:'Abjad',i:'🔤',bg:'linear-gradient(135deg,#1d4ed8,#38bdf8)'},{id:'angka',t:'Angka',i:'🔢',bg:'linear-gradient(135deg,#c2410c,#fbbf24)'},{id:'hij',t:'Huruf Hijaiyah',i:'🕌',bg:'linear-gradient(135deg,#065f46,#34d399)'}];
 const GAMES={abjad1:{cat:'abjad',t:'Dengar Huruf',i:'🔊'},abjad2:{cat:'abjad',t:'Huruf Awal',i:'🍎'},angka1:{cat:'angka',t:'Hitung Bintang',i:'⭐'},angka2:{cat:'angka',t:'Dengar Angka',i:'🔊'},hij1:{cat:'hij',t:'Kenali Huruf',i:'ب'}};
+const gOn=id=>!(A.game&&A.game.enabled&&A.game.enabled[id]===false);
 const AN={A:'a',B:'be',C:'ce',D:'de',E:'e',F:'ef',G:'ge',H:'ha',I:'i',J:'je',K:'ka',L:'el',M:'em',N:'en',O:'o',P:'pe',Q:'ki',R:'er',S:'es',T:'te',U:'u',V:'ve',W:'we',X:'iks',Y:'ye',Z:'zet'};
 const NUMW=['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas','dua belas','tiga belas','empat belas','lima belas','enam belas','tujuh belas','delapan belas','sembilan belas','dua puluh'];
 const HJ=[['ا','Alif'],['ب','Ba'],['ت','Ta'],['ث','Tsa'],['ج','Jim'],['ح','Ha'],['خ','Kho'],['د','Dal'],['ذ','Dzal'],['ر','Ra'],['ز','Zai'],['س','Sin'],['ش','Syin'],['ص','Shad'],['ض','Dhad'],['ط','Tha'],['ظ','Zha'],['ع','Ain'],['غ','Ghain'],['ف','Fa'],['ق','Qaf'],['ك','Kaf'],['ل','Lam'],['م','Mim'],['ن','Nun'],['و','Wau'],['ه','Ha'],['ي','Ya']];
@@ -353,8 +365,9 @@ async function loadAu(){const au=(A.game&&A.game.audio)||{};for(const k in AU)if
 function playAu(i){try{if(curAu)curAu.pause();const x=AU[i];if(!x||!x.src)return false;curAu=new Audio(x.src);const p=curAu.play();if(p&&p.catch)p.catch(()=>{});return true}catch(e){return false}}
 const hasAu=q=>q.aud!=null&&AU[q.aud]&&AU[q.aud].src;
 function sayQ(q){if(hasAu(q))playAu(q.aud);else say(q.say)}
-function gameCard(){return '<button class="c f" style="--bg:linear-gradient(135deg,#3a86ff,#8338ec)" data-pg><i>🎮</i>Permainan<small>Abjad · Angka · Hijaiyah</small></button>'}
-function drawGames(){G=null;$('#app').innerHTML='<button class="c b" data-back>‹ Kembali</button><h1>🎮 Permainan</h1>'+CATS.map(c=>`<div class="gcat"><h2>${c.i} ${c.t}</h2><div class="g">`+Object.entries(GAMES).filter(([id,g])=>g.cat===c.id).map(([id,g])=>`<button class="c f" style="--bg:${c.bg}" data-gm="${id}"><i${id==='hij1'?' class="ar"':''}>${g.i}</i>${g.t}</button>`).join('')+'</div></div>').join('');
+function gameCard(){if(!Object.keys(GAMES).some(gOn))return '';return '<button class="c f" style="--bg:linear-gradient(135deg,#3a86ff,#8338ec)" data-pg><i>🎮</i>Permainan<small>Abjad · Angka · Hijaiyah</small></button>'}
+function drawGames(){G=null;const cs=CATS.map(c=>[c,Object.entries(GAMES).filter(([id,g])=>g.cat===c.id&&gOn(id))]).filter(x=>x[1].length);
+ $('#app').innerHTML='<button class="c b" data-back>‹ Kembali</button><h1>🎮 Permainan</h1>'+(cs.length?cs.map(([c,L])=>`<div class="gcat"><h2>${c.i} ${c.t}</h2><div class="g">`+L.map(([id,g])=>`<button class="c f" style="--bg:${c.bg}" data-gm="${id}"><i${id==='hij1'?' class="ar"':''}>${g.i}</i>${g.t}</button>`).join('')+'</div></div>').join(''):'<p style="font-size:3.4vh">Belum ada permainan yang diaktifkan.</p>');
  const f=document.querySelector('#app .c.f');if(f)f.focus()}
 function drawGame(){if(!G||!G.q)return;const q=G.q,gm=GAMES[G.id],cat=CATS.find(c=>c.id===gm.cat);
  let st;
@@ -363,7 +376,7 @@ function drawGame(){if(!G||!G.q)return;const q=G.q,gm=GAMES[G.id],cat=CATS.find(
  else st='<div class="spk">🦉<span>🔊</span></div>';
  $('#app').innerHTML=`<div class="gsc" style="background:${cat.bg}"><div class="gtop"><button class="c b" data-back>‹ Kembali</button><div class="gt">${gm.i} ${gm.t}</div><button class="c b" data-rp>🔊 Ulangi</button></div><div class="gst">${st}</div><div class="chs">`+q.ch.map((c,i)=>`<button class="c ch" style="--cc:${COL[i]}" data-ch="${i}">${c.h}</button>`).join('')+'</div></div>';
  const f=document.querySelector('.ch');if(f)f.focus()}
-function startGame(id){G={id,wrong:0,tok:0,lastKey:null,lockIn:false};view='game';
+function startGame(id){if(!gOn(id))return;G={id,wrong:0,tok:0,lastKey:null,lockIn:false};view='game';
  if(id==='hij1'&&FB_ON&&A.game&&A.game.audio){$('#app').innerHTML='<h1>Memuat suara...</h1>';loadAu().then(()=>{if(G&&G.id===id&&view==='game')next()})}else next()}
 function next(){G.wrong=0;G.lockIn=false;G.tok++;G.q=mkQ(G.id);drawGame();const tk=G.tok;setTimeout(()=>{if(G&&G.tok===tk&&view==='game')sayQ(G.q)},500)}
 function answer(i){if(!G||G.lockIn||view!=='game')return;const c=G.q.ch[i];if(c.used)return;const bs=document.querySelectorAll('.ch');
