@@ -90,6 +90,7 @@ $('go').onclick=async()=>{try{const d=await (await fetch('data.json?'+Date.now()
 $('pw').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
 if(sessionStorage.getItem('ok'))enter();
 
+const findVid=id=>{for(const f of D.folders)if(f.videos.some(v=>v.id===id))return f.name;return null};
 const VPG=5,VPA={};
 const pgInfo=(f,i)=>{const pages=Math.max(1,Math.ceil(f.videos.length/VPG));VPA[i]=Math.min(Math.max(VPA[i]||0,0),pages-1);return{pg:VPA[i],pages}};
 const pgv=(f,i)=>{const{pg}=pgInfo(f,i);return f.videos.map((v,j)=>[v,j]).slice(pg*VPG,pg*VPG+VPG)};
@@ -129,7 +130,9 @@ $('fl').onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;cons
  else if(a==='bad')F[i].videos[j].bad=false;
  else if(a==='col')F[i].color=b.dataset.c;
  else if(a==='add'){const id=ytid($('l'+i).value.trim());if(!id)return msg('Link YouTube tidak dikenali.');
-  let t='Video '+id;try{const r=await oe(id);if(r.ok)t=(await r.json()).title}catch(x){}F[i].videos.push({id,title:t});VPA[i]=Math.floor((F[i].videos.length-1)/VPG)}
+  const d0=findVid(id);if(d0)return alert('Video ini sudah pernah diinput di folder "'+d0+'". Satu video hanya bisa dimasukkan sekali.');
+  let t='Video '+id;try{const r=await oe(id);if(r.ok)t=(await r.json()).title}catch(x){}const d1=findVid(id);if(d1)return alert('Video ini sudah pernah diinput di folder "'+d1+'".');
+  F[i].videos.push({id,title:t});VPA[i]=Math.floor((F[i].videos.length-1)/VPG)}
  ui();dirty()};
 
 $('ck').onclick=async()=>{msg('Memeriksa video...');const res=[];
@@ -273,7 +276,7 @@ $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;cons
  else if(a==='radd'){const t=$('rt').value.trim();if(!t)return;const id=ref('rewards').push().key;ref('rewards/'+id).set({kid:$('rk').value,title:t,icon:$('ri').value,target:+$('rg').value||20,order:Date.now()})}
  else if(a==='rdel'){if(confirm('Hapus hadiah ini?'))ref('rewards/'+d.id).remove()}
  else if(a==='rclaim'){const r=ref(`claimed/${d.id}/${d.k}/${d.w}`),cur=(((A.claimed||{})[d.id]||{})[d.k]||{})[d.w];cur?r.remove():r.set(true)}
- else if(a==='qadd'){const id=ytid($('ql').value.trim());if(!id)return alert('Link YouTube tidak dikenali.');let t='Murotal';try{const r=await oe(id);if(r.ok)t=(await r.json()).title}catch(x){}ref('murotal/'+ref('murotal').push().key).set({vid:id,title:t,order:Date.now()})}
+ else if(a==='qadd'){const id=ytid($('ql').value.trim());if(!id)return alert('Link YouTube tidak dikenali.');if(ls(A.murotal).some(x=>x.vid===id))return alert('Murotal ini sudah ada di daftar.');let t='Murotal';try{const r=await oe(id);if(r.ok)t=(await r.json()).title}catch(x){}if(ls(A.murotal).some(x=>x.vid===id))return alert('Murotal ini sudah ada di daftar.');ref('murotal/'+ref('murotal').push().key).set({vid:id,title:t,order:Date.now()})}
  else if(a==='qup'||a==='qdn')fmv('murotal',ls(A.murotal),d.id,a==='qup'?-1:1);
  else if(a==='qdel'){if(confirm('Hapus murotal ini?'))ref('murotal/'+d.id).remove()}
  else if(a==='qtog'){ref('murotalOn').set(A.murotalOn===false)}
