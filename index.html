@@ -107,6 +107,12 @@ body.lite .st{display:none}body.lite *{animation:none!important;transition:none!
 .c:disabled{opacity:.3;cursor:default}.mn{font-size:2.6vh;margin-left:.8vw;color:#b3261e}
 .b.on{background:#ffd23f;color:#1b1740}.gcard{position:relative}.gcard.vd{border-color:#a78bfa}
 .gcard .pl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9vh;color:#fff;background:#0004;text-shadow:0 0 2vh #000}
+.prh{margin-bottom:1vh}.prd{font-size:3vh;opacity:.9;margin-top:-1.5vh}
+.prn{font-size:4vh;background:#ffd23f;color:#1b1740;border-radius:3vh;padding:1.4vh 3vw;display:inline-block;margin:1vh 0 2.5vh}
+.prg{display:grid;grid-template-columns:repeat(3,1fr);gap:2.2vw}
+.pcard{background:#2a2466;border-radius:3vh;padding:2.4vh 1vw;text-align:center;border:.6vh solid transparent}
+.pcard b{display:block;font-size:8vh;font-weight:400;line-height:1.1}.pcard span{display:block;font-size:3.4vh;font-weight:700}.pcard strong{display:block;font-size:6.4vh}
+.pcard.cur{background:#0b6e4f}.pcard.nx{border-color:#ffd23f;animation:hp .9s infinite alternate}
 </style></head><body>
 <div id="app"></div>
 <div id="pl"><div id="player"></div><div id="sh"></div></div>
@@ -163,7 +169,7 @@ function tuShow(vs,al){tu=true;scene(vs,{loop:false,alarmOn:al})}
 function dismissTU(){tu=false;unlock();show('#lk',0);$('#lk').className='';if(view==='play'){view=mur?'murotal':'videos';mur=false}draw()}
 const fmt=s=>s>=600?Math.ceil(s/60)+' menit':Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 
-setInterval(()=>{if(view==='play'&&!paused&&D.settings.mode==='duration'&&lim()){U.sec=(U.sec||0)+1;if(U.sec%10===0)sv()}
+setInterval(()=>{if(view==='prayer')prUpdate();if(view==='play'&&!paused&&D.settings.mode==='duration'&&lim()){U.sec=(U.sec||0)+1;if(U.sec%10===0)sv()}
  const st=status();
  if(!st.ok&&(!locked||lkKey!==st.why+'|'+(st.msg||'')))return lock(st);
  if(st.ok&&locked){locked=false;unlock();show('#lk',0);$('#lk').className='';view='folders';fired={};draw()}
@@ -176,12 +182,12 @@ setInterval(()=>{if(view==='play'&&!paused&&D.settings.mode==='duration'&&lim())
  else tm.style.display='none'},1000);
 let ldK=0;setInterval(()=>{if(ldK++%(FB_ON?3:1)===0)load()},20000);
 
-function draw(){const a=$('#app');if(view!=='stars')mwOff();if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='game'){drawGame();return}if(view==='gal'){drawGal();return}if(view==='galv'){drawGv();return}
+function draw(){const a=$('#app');if(view!=='stars')mwOff();if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='game'){drawGame();return}if(view==='gal'){drawGal();return}if(view==='galv'){drawGv();return}if(view==='prayer'){drawPrayer();return}
  if(view==='welcome'){const c=D.child||{};if(!c.name&&!c.photo){view='folders';return draw()}
   a.innerHTML=`<div class="wl">${c.photo?`<img class="ph" src="${c.photo}" alt="">`:''}<h1>Halo${c.name?', '+esc(c.name):''}!</h1><button class="c b" data-go>▶ Mulai</button></div>`}
  else if(view==='folders'){const L=J('last',null);let rs='';
   if(L&&D.folders[L.f]){const v=D.folders[L.f].videos.findIndex(x=>x.id===L.id);if(v>=0)rs=`<button class="c f rs" data-r="${L.f}.${v}">▶ Lanjutkan: ${esc(D.folders[L.f].videos[v].title)}</button>`}
-  a.innerHTML='<h1>Pilih folder</h1><div class="g">'+rs+starCard()+gameCard()+galCard()+(D.folders.length?D.folders.map((f,i)=>`<button class="c f" style="--bg:${esc(f.color||'#2a2466')}" data-f="${i}"><i>${esc(f.icon||'📁')}</i>${esc(f.name)}<small>${f.videos.length} video</small></button>`).join(''):'<p>Belum ada folder. Tambahkan lewat halaman Admin.</p>')+'</div>'}
+  a.innerHTML='<h1>Pilih folder</h1><div class="g">'+rs+starCard()+gameCard()+galCard()+prayerCard()+(D.folders.length?D.folders.map((f,i)=>`<button class="c f" style="--bg:${esc(f.color||'#2a2466')}" data-f="${i}"><i>${esc(f.icon||'📁')}</i>${esc(f.name)}<small>${f.videos.length} video</small></button>`).join(''):'<p>Belum ada folder. Tambahkan lewat halaman Admin.</p>')+'</div>'}
  else{const f=D.folders[fi];a.innerHTML=`<button class="c b" data-back>‹ Kembali</button><h1>${esc(f.icon||'')} ${esc(f.name)}</h1>${vb()}<div class="g">`+f.videos.map((v,i)=>`<button class="c v${v.bad?' bad':''}" data-v="${i}"><img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt=""><span>${esc(v.title)}</span>${isBad(v)?'<em>⚠ Tidak bisa diputar</em>':''}</button>`).join('')+'</div>'}
  const first=a.querySelector('.c:not([disabled])');if(first)first.focus()}
 
@@ -191,6 +197,7 @@ $('#app').onclick=e=>{const b=e.target.closest('.c');if(!b)return;audio();const 
  else if(d.s!==undefined){view='stars';draw()}
  else if(d.pg!==undefined){view='games';draw()}
  else if(d.gal!==undefined||d.gchk!==undefined)galOpen()
+ else if(d.pry!==undefined)prayerOpen()
  else if(d.gi!==undefined)galView(+d.gi)
  else if(d.gprev!==undefined)galStep(-1)
  else if(d.gnext!==undefined)galStep(1)
@@ -219,7 +226,7 @@ function pcTimer(){clearTimeout(hT);hT=setTimeout(pcHide,7000)}
 function pcShow(){const p=$('#pc'),b=p.querySelector('.pp');p.style.display='flex';b.textContent=paused?'▶ Lanjut':'⏸ Jeda';b.focus();pcTimer()}
 function hint(){pcShow()}
 function stop(){sv();galStop();if(P&&P.stopVideo)P.stopVideo();show('#pl',0);mwOff();pcHide()}
-function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view=mur?'murotal':'videos';mur=false}else if(view==='murotal')view='stars';else if(view==='videos')view='folders';else if(view==='stars')view='folders';else if(view==='game'){exitGame();view='games'}else if(view==='galv'){galStop();view='gal'}else if(view==='gal'){galLeave();view='folders'}else if(view==='games')view='folders';else return;draw()}
+function back(){if(locked)return;if(tu){dismissTU();return}if(view==='play'){stop();view=mur?'murotal':'videos';mur=false}else if(view==='murotal')view='stars';else if(view==='videos')view='folders';else if(view==='stars')view='folders';else if(view==='game'){exitGame();view='games'}else if(view==='prayer')view='folders';else if(view==='galv'){galStop();view='gal'}else if(view==='gal'){galLeave();view='folders'}else if(view==='games')view='folders';else return;draw()}
 
 const isBackKey=e=>{const k=e.key;return k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===4||e.keyCode===27};
 document.addEventListener('keydown',e=>{const k=e.key;audio();if(isBackKey(e)){e.preventDefault();return}
@@ -264,6 +271,7 @@ function onData(){document.body.classList.toggle('lite',!!A.lite);const e=A.even
  const hk=kidsOn().length>0;if(view==='game'&&G&&!gOn(G.id)){exitGame();view='games';drawGames();return}
  if(view==='stars')drawStars();
  else if(view==='games')drawGames();
+ else if(view==='prayer'&&PRC&&PRC.k!==prKey())prayerOpen();
  else if(view==='folders'){const ga=Object.keys(GAMES).some(gOn);if(hk!==hadKids||ga!==hadGames){hadKids=hk;hadGames=ga;draw()}else{const el=document.querySelector('.sc');if(el)el.innerHTML=scTxt()}}}
 
 function scTxt(){const t=ds(new Date());return kidsOn().map(k=>esc(k.name)+' '+dayTot(k.id,t)+'⭐').join(' · ')}
@@ -437,6 +445,41 @@ function galPP(){const v=document.getElementById('gvd'),b=document.querySelector
 function galStop(){const v=document.getElementById('gvd');if(v){try{v.pause();v.removeAttribute('src');v.load()}catch(e){}}}
 function galLeave(){clearInterval(gT);GAL.L={img:{items:[],next:''},vid:{items:[],next:''}}}
 /* GAL-END */
+
+/* PRAY-START: Jadwal sholat (layanan gratis Aladhan, diambil sekali per hari) */
+const PRN=[['Fajr','Subuh','🌄'],['Sunrise','Terbit','🌅'],['Dhuhr','Dzuhur','☀️'],['Asr','Ashar','🌤️'],['Maghrib','Maghrib','🌇'],['Isha','Isya','🌃']],PR5=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+let PRC=null,PRS='',prBusy=false;
+const prCfg=()=>{const p=A.prayer||{};return{city:(p.city||'Semarang').trim(),country:(p.country||'Indonesia').trim(),method:+p.method||20,adj:+p.adj||0,lat:p.lat,lon:p.lon}};
+const prKey=()=>{const c=prCfg();return[c.city,c.country,c.method,c.adj,c.lat||'',c.lon||''].join('|')};
+const prHM=s=>{const m=String(s).match(/(\d{1,2}):(\d{2})/);return m?+m[1]*60+ +m[2]:null};
+const prFM=n=>{n=((n%1440)+1440)%1440;return pad(Math.floor(n/60))+':'+pad(n%60)};
+const prNm=k=>PRN.find(x=>x[0]===k)[1];
+const prDur=m=>{m=Math.ceil(m);if(m<=0)return 'sebentar lagi';const h=Math.floor(m/60),mm=m%60;return(h?h+' jam ':'')+(mm?mm+' menit ':'')+'lagi'};
+function nowSec(tz){try{const p=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date()),g=k=>+p.find(x=>x.type===k).value;return g('hour')*3600+g('minute')*60+g('second')}catch(e){const d=new Date();return d.getHours()*3600+d.getMinutes()*60+d.getSeconds()}}
+async function prGet(){const c=prCfg(),k=prKey(),t0=new Date(),dk=ds(t0);let ca=J('pr',null);if(ca&&ca.k===k&&ca.d===dk)return ca;
+ const dd=pad(t0.getDate())+'-'+pad(t0.getMonth()+1)+'-'+t0.getFullYear(),q=encodeURIComponent,
+  u=(c.lat&&c.lon)?'https://api.aladhan.com/v1/timings/'+dd+'?latitude='+q(c.lat)+'&longitude='+q(c.lon)+'&method='+c.method:'https://api.aladhan.com/v1/timingsByCity/'+dd+'?city='+q(c.city)+'&country='+q(c.country)+'&method='+c.method;
+ try{const r=await fetch(u),j=await r.json();if(!r.ok||!j.data||!j.data.timings)throw 0;const T={};PRN.forEach(x=>{const v=prHM(j.data.timings[x[0]]);if(v!=null)T[x[0]]=v+c.adj});const h=j.data.date&&j.data.date.hijri;
+  ca={k,d:dk,T,tz:(j.data.meta&&j.data.meta.timezone)||'',h:h?h.day+' '+((h.month&&h.month.en)||'')+' '+h.year:''};try{localStorage.setItem('pr',JSON.stringify(ca))}catch(e){}return ca}
+ catch(e){if(ca&&ca.k===k){ca.old=true;return ca}throw e}}
+function prNext(ca,nm){if(nm==null)nm=nowSec(ca.tz)/60;const L=PR5.map(k=>[k,ca.T[k]]).filter(x=>x[1]!=null);if(!L.length)return null;
+ let nx=L.find(x=>x[1]>nm),cur=null,diff;for(const x of L)if(x[1]<=nm)cur=x[0];
+ if(nx)diff=nx[1]-nm;else{nx=L[0];diff=nx[1]+1440-nm}if(!cur)cur=L[L.length-1][0];return{nx:nx[0],t:nx[1],diff,cur}}
+function prayerCard(){if(A.prayer&&A.prayer.on===false)return '';let sub=esc(prCfg().city);if(PRC&&PRC.k===prKey()){const n=prNext(PRC);if(n)sub='Berikutnya: '+prNm(n.nx)+' '+prFM(n.t)}
+ return `<button class="c f" style="--bg:linear-gradient(135deg,#047857,#0f766e)" data-pry><i>🕌</i>Jadwal Sholat<small>${sub}</small></button>`}
+function drawPrayer(){const a=$('#app'),bk='<button class="c b" data-back>‹ Kembali</button>',c=prCfg();
+ if(PRS==='load')a.innerHTML=bk+'<h1>🕌 Jadwal Sholat</h1><p style="font-size:3.4vh">Memuat jadwal...</p>';
+ else if(PRS!=='ok'||!PRC)a.innerHTML=bk+'<h1>🕌 Jadwal Sholat</h1><p style="font-size:3.4vh">Jadwal tidak bisa dimuat. Cek internet atau pengaturan lokasi di admin.</p>';
+ else{const nd=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  a.innerHTML=`<div class="vtop">${bk}</div><div class="prh"><h1>🕌 Jadwal Sholat · ${esc(c.city)}</h1><div class="prd">${esc(nd)}${PRC.h?' · '+esc(PRC.h)+' H':''}${PRC.old?' · data tersimpan':''}</div></div><div class="prn" id="prn"></div><div class="prg">`+PRN.filter(x=>PRC.T[x[0]]!=null).map(x=>`<div class="pcard" data-k="${x[0]}"><b>${x[2]}</b><span>${x[1]}</span><strong>${prFM(PRC.T[x[0]])}</strong></div>`).join('')+'</div>';
+  prUpdate()}
+ const f=a.querySelector('.c');if(f)f.focus()}
+function prUpdate(){if(!PRC)return;if(PRC.d!==ds(new Date())&&!prBusy){prBusy=true;prayerOpen().then(()=>{prBusy=false},()=>{prBusy=false});return}
+ const n=prNext(PRC),e=document.getElementById('prn');if(!n||!e)return;e.innerHTML=`Berikutnya: <b>${prNm(n.nx)}</b> pukul ${prFM(n.t)} · ${prDur(n.diff)}`;
+ document.querySelectorAll('.pcard').forEach(el=>{el.classList.toggle('nx',el.dataset.k===n.nx);el.classList.toggle('cur',el.dataset.k===n.cur)})}
+async function prayerOpen(){view='prayer';PRS=PRC&&PRC.k===prKey()&&PRC.d===ds(new Date())?'ok':'load';draw();
+ try{PRC=await prGet();PRS='ok'}catch(e){PRS=PRC&&PRC.k===prKey()?'ok':'err'}if(view==='prayer')draw()}
+/* PRAY-END */
 document.body.classList.toggle('lite',!!A.lite);hadKids=ls(A.kids).length>0;if(FB_ON){pull();conn();setInterval(()=>{if(Date.now()-sseT>90000)pull()},30000);setInterval(pull,600000);
  let geT='';setInterval(async()=>{if(view!=='games'&&view!=='game')return;try{const x=await (await fetch(DB+'/app/game/enabled.json?_='+Date.now(),{cache:'no-store'})).text();if(geT&&x!==geT)pull();geT=x}catch(e){}},5000)}
 addEventListener('pagehide',sv);

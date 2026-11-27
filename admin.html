@@ -59,8 +59,8 @@ button.x{background:#b3261e;padding:6px 10px;min-height:38px}button.s{background
 <div id="fbno" hidden><section><h2>Firebase belum diatur</h2><p>Isi file <b>firebase-config.js</b> dengan konfigurasi proyek Firebase Anda, lalu muat ulang halaman ini. Langkahnya ada di <b>PANDUAN-FIREBASE.md</b>.</p></section></div>
 <div id="fbin" hidden><section><h2>Masuk ke Firebase</h2><div class="r"><input class="w" id="fe" type="email" placeholder="Email admin"><input class="w" id="fp" type="password" placeholder="Password"><button id="fgo">Masuk</button></div><small id="fer"></small></section></div>
 <div id="fbon" hidden>
-<div class="tabs"><button class="tb on" data-s="td">Hari ini</button><button class="tb" data-s="tk">Anak</button><button class="tb" data-s="ta">Kegiatan</button><button class="tb" data-s="tr">Hadiah</button><button class="tb" data-s="th">Riwayat</button><button class="tb" data-s="tg">Permainan</button><button class="tb" data-s="tq">Murotal</button><button class="tb" data-s="tl">Galeri</button><button class="s" id="fout">Keluar</button></div>
-<section id="td"></section><section id="tk" hidden></section><section id="ta" hidden></section><section id="tr" hidden></section><section id="th" hidden></section><section id="tg" hidden></section><section id="tq" hidden></section><section id="tl" hidden></section>
+<div class="tabs"><button class="tb on" data-s="td">Hari ini</button><button class="tb" data-s="tk">Anak</button><button class="tb" data-s="ta">Kegiatan</button><button class="tb" data-s="tr">Hadiah</button><button class="tb" data-s="th">Riwayat</button><button class="tb" data-s="tg">Permainan</button><button class="tb" data-s="tq">Murotal</button><button class="tb" data-s="tl">Galeri</button><button class="tb" data-s="ts">Sholat</button><button class="s" id="fout">Keluar</button></div>
+<section id="td"></section><section id="tk" hidden></section><section id="ta" hidden></section><section id="tr" hidden></section><section id="th" hidden></section><section id="tg" hidden></section><section id="tq" hidden></section><section id="tl" hidden></section><section id="ts" hidden></section>
 </div></div></div></main>
 <div id="bar" hidden><span id="msg">Belum ada perubahan.</span><span><button class="s" id="cp">Salin JSON</button> <button id="sv">Simpan ke GitHub</button></span></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -189,7 +189,7 @@ function fbStart(){if(!FBOK){$('fbno').hidden=false;return}if(db)return;
 $('fgo').onclick=()=>auth.signInWithEmailAndPassword($('fe').value.trim(),$('fp').value).catch(e=>$('fer').textContent='Gagal masuk ('+e.code+'). Cek email dan password.');
 $('fp').onkeydown=e=>{if(e.key==='Enter')$('fgo').click()};
 
-function R(){if(!$('fbon').hidden)({td:rTd,tk:rTk,ta:rTa,tr:rTr,th:rTh,tg:rTg,tq:rTq,tl:rTl})[stab]()}
+function R(){if(!$('fbon').hidden)({td:rTd,tk:rTk,ta:rTa,tr:rTr,th:rTh,tg:rTg,tq:rTq,tl:rTl,ts:rTs})[stab]()}
 const none='<small>Belum ada data.</small>';
 
 function penBlock(k,d){const L=Object.entries(((A.penalties||{})[k.id]||{})[d]||{});
@@ -233,6 +233,23 @@ async function lTest(){const key=$('dk').value.trim(),fid=dfId($('df').value.tri
  try{const q="'"+fid+"' in parents and trashed=false and (mimeType contains 'image/' or mimeType contains 'video/')",r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&pageSize=100&fields=files(id,mimeType)&key='+encodeURIComponent(key)),j=await r.json();
   if(!r.ok){o.textContent='Gagal (kode '+r.status+'): '+((j.error&&j.error.message)||'periksa kunci API dan pembagian folder');return}
   const f=j.files||[],v=f.filter(x=>/^video/.test(x.mimeType)).length;o.textContent='Berhasil. Ditemukan '+f.length+(f.length>=100?'+':'')+' file ('+v+' video).'}catch(e){o.textContent='Gagal terhubung ke Google Drive.'}}
+const PM=[[20,'Kemenag RI (disarankan untuk Indonesia)'],[3,'Muslim World League'],[4,'Umm Al-Qura (Makkah)'],[11,'Singapura'],[17,'JAKIM (Malaysia)'],[2,'ISNA (Amerika Utara)']];
+function rTs(){const p=A.prayer||{},on=p.on!==false;$('ts').innerHTML=`<h2>Jadwal sholat di TV</h2>
+ <button class="tgb ${on?'on':'off'}" data-act="ptog">${on?'✅ AKTIF. Kartu Jadwal Sholat tampil di TV. Tekan untuk menonaktifkan':'⏸ NONAKTIF. Tekan untuk mengaktifkan'}</button>
+ <small>Jadwal diambil dari layanan gratis Aladhan (api.aladhan.com), sekali per hari, lalu disimpan di TV. Perubahan lokasi langsung berlaku.</small>
+ <h2 style="margin-top:14px">Lokasi</h2>
+ <div class="r"><input class="w" id="pc" value="${esc(p.city||'Semarang')}" placeholder="Kota atau kabupaten"><input class="w" id="pk" value="${esc(p.country||'Indonesia')}" placeholder="Negara"></div>
+ <div class="r"><select id="pm" class="w">${PM.map(([v,n])=>`<option value="${v}"${(+p.method||20)===v?' selected':''}>${n}</option>`).join('')}</select><label>Koreksi (menit) <input id="pa" type="number" min="-15" max="15" value="${+p.adj||0}" style="width:80px"></label></div>
+ <div class="r"><input id="pla" value="${esc(p.lat||'')}" placeholder="Lintang (opsional)" style="width:150px"><input id="plo" value="${esc(p.lon||'')}" placeholder="Bujur (opsional)" style="width:150px"></div>
+ <small>Kalau nama daerah tidak dikenali, isi lintang dan bujur (contoh Jakarta: -6.2088 dan 106.8456). Bila keduanya diisi, koordinat yang dipakai. Koreksi menit ditambahkan ke semua waktu (misalnya +2 untuk kehati-hatian).</small>
+ <div class="r"><button data-act="psave">Simpan</button><button class="s" data-act="ptest">Uji jadwal</button></div><small id="pres"></small>`}
+async function pTest(){const o=$('pres'),city=$('pc').value.trim(),ctry=$('pk').value.trim(),m=$('pm').value,la=$('pla').value.trim(),lo=$('plo').value.trim(),adj=+$('pa').value||0,t=new Date(),dd=pad(t.getDate())+'-'+pad(t.getMonth()+1)+'-'+t.getFullYear(),q=encodeURIComponent;
+ const u=(la&&lo)?'https://api.aladhan.com/v1/timings/'+dd+'?latitude='+q(la)+'&longitude='+q(lo)+'&method='+m:'https://api.aladhan.com/v1/timingsByCity/'+dd+'?city='+q(city)+'&country='+q(ctry)+'&method='+m;
+ o.textContent='Mengambil jadwal...';
+ try{const r=await fetch(u),j=await r.json();if(!r.ok||!j.data||!j.data.timings){o.textContent='Gagal (kode '+r.status+'). Periksa nama kota atau isi lintang dan bujur.';return}
+  const T=j.data.timings,f=k=>{const v=String(T[k]).match(/(\d{1,2}):(\d{2})/);if(!v)return '?';const n=((+v[1]*60+ +v[2]+adj)%1440+1440)%1440;return pad(Math.floor(n/60))+':'+pad(n%60)};
+  o.textContent='Berhasil'+(j.data.meta&&j.data.meta.timezone?' ('+j.data.meta.timezone+')':'')+': Subuh '+f('Fajr')+' · Terbit '+f('Sunrise')+' · Dzuhur '+f('Dhuhr')+' · Ashar '+f('Asr')+' · Maghrib '+f('Maghrib')+' · Isya '+f('Isha')}
+ catch(e){o.textContent='Gagal terhubung ke layanan jadwal sholat.'}}
 function rTq(){const its=ls(A.murotal),on=A.murotalOn!==false,src=A.murotalSource==='radio'?'radio':'yt';
  $('tq').innerHTML=`<h2>Murotal dan radio di Bintang Hebat</h2>
  <button class="tgb ${on?'on':'off'}" data-act="qtog">${on?'✅ AKTIF. Diputar di layar Bintang Hebat. Tekan untuk menonaktifkan':'⏸ NONAKTIF. Tekan untuk mengaktifkan'}</button>
@@ -262,7 +279,7 @@ function fmv(path,list,id,dir){const i=list.findIndex(x=>x.id===id),j=i+dir;if(j
 function pic(file,cb){const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=256;c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);URL.revokeObjectURL(u);cb(c.toDataURL('image/jpeg',.75))};im.src=u}
 
 $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
- if(d.s){stab=d.s;document.querySelectorAll('#fbon .tabs .tb').forEach(x=>x.className='tb'+(x.dataset.s===stab?' on':''));['td','tk','ta','tr','th','tg','tq','tl'].forEach(i=>$(i).hidden=i!==stab);return R()}
+ if(d.s){stab=d.s;document.querySelectorAll('#fbon .tabs .tb').forEach(x=>x.className='tb'+(x.dataset.s===stab?' on':''));['td','tk','ta','tr','th','tg','tq','tl','ts'].forEach(i=>$(i).hidden=i!==stab);return R()}
  if(b.id==='fout')return auth.signOut();
  const a=d.act;if(!a)return;const K=ls(A.kids),AC=ls(A.activities);
  if(a==='star'){const cur=+scOf(d.k,day0)[d.a]||0;setScore(d.k,d.a,day0,+d.n===cur?0:+d.n)}
@@ -284,6 +301,12 @@ $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;cons
  else if(a==='penp'){document.querySelector('[data-prs="'+d.k+'"]').value=d.t}
  else if(a==='pen'){const why=document.querySelector('[data-prs="'+d.k+'"]').value.trim(),n=+document.querySelector('[data-pn="'+d.k+'"]').value||1;if(!why)return alert('Tulis pelanggarannya dulu.');ref(`penalties/${d.k}/${day0}`).push({n,reason:why,ts:TS()});if(day0===ds(new Date()))ref('events/last').set({kid:d.k,neg:n,stars:0,ts:TS(),text:`${A.kids[d.k].name}, bintang berkurang ${n} karena ${why}. Ayo perbaiki ya.`})}
  else if(a==='pdel')ref(`penalties/${d.k}/${day0}/${d.p}`).remove()
+ else if(a==='ptog'){ref('prayer/on').set(A.prayer&&A.prayer.on===false)}
+ else if(a==='psave'){const city=$('pc').value.trim(),ctry=$('pk').value.trim(),la=$('pla').value.trim(),lo=$('plo').value.trim();
+  if(!!la!==!!lo||(la&&(isNaN(+la)||isNaN(+lo))))return alert('Isi lintang dan bujur dengan angka, atau kosongkan keduanya.');
+  if(!city&&!la)return alert('Isi nama kota atau koordinat.');
+  ref('prayer').set({on:!(A.prayer&&A.prayer.on===false),city:city||'Semarang',country:ctry||'Indonesia',method:+$('pm').value,adj:+$('pa').value||0,lat:la||null,lon:lo||null})}
+ else if(a==='ptest')pTest()
  else if(a==='ltog'){db.ref('gal/cfg/on').set(!(GL.cfg&&GL.cfg.on))}
  else if(a==='lsave'){const key=$('dk').value.trim(),fid=dfId($('df').value.trim());if(!key||!fid)return alert('Isi kunci API dan link folder yang benar.');db.ref('gal/cfg').set({key,folder:fid,on:!GL.cfg||GL.cfg.on!==false})}
  else if(a==='ltest')lTest();
