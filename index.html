@@ -113,10 +113,12 @@ body.lite .st{display:none}body.lite *{animation:none!important;transition:none!
 .pcard{background:#2a2466;border-radius:3vh;padding:2.4vh 1vw;text-align:center;border:.6vh solid transparent}
 .pcard b{display:block;font-size:8vh;font-weight:400;line-height:1.1}.pcard span{display:block;font-size:3.4vh;font-weight:700}.pcard strong{display:block;font-size:6.4vh}
 .pcard.cur{background:#0b6e4f}.pcard.nx{border-color:#ffd23f;animation:hp .9s infinite alternate}
+#pw{position:fixed;top:2vh;left:50%;transform:translateX(-50%);z-index:12;display:none;background:#0f766e;color:#fff;padding:1.4vh 3vw;border-radius:3vh;font-size:3.6vh;font-weight:700;box-shadow:0 1vh 0 #0005;white-space:nowrap}
+#tm{white-space:nowrap}#tm .tp{margin-left:1.4vw;padding-left:1.4vw;border-left:.3vh solid #fff7}#tm span:first-child{margin:0;padding:0;border:0}
 </style></head><body>
 <div id="app"></div>
 <div id="pl"><div id="player"></div><div id="sh"></div></div>
-<div id="note"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div><div id="hint"></div><div id="pc"><button class="c pc pp">⏸ Jeda</button><button class="c pc pb">‹ Kembali</button></div><div id="mw"><div id="mwp"><div id="mp"></div></div><div id="mt">🎧 Murotal</div></div>
+<div id="note"></div><div id="pw"></div><div id="ce"></div><div id="cf"></div><div id="tm"></div><div id="hint"></div><div id="pc"><button class="c pc pp">⏸ Jeda</button><button class="c pc pb">‹ Kembali</button></div><div id="mw"><div id="mwp"><div id="mp"></div></div><div id="mt">🎧 Murotal</div></div>
 <div id="lk"></div>
 <script src="firebase-config.js"></script>
 <script>
@@ -177,9 +179,11 @@ setInterval(()=>{if(view==='prayer')prUpdate();if(view==='play'&&!paused&&D.sett
  const vs=vstat(),tm=$('#tm');
  if(!vs.ok&&view==='play'&&lim()){view=mur?'murotal':'videos';mur=false;draw();tuShow(vs,true);return}
  if(vs.ok!==vPrev){vPrev=vs.ok;if(view==='videos')draw()}
- if(vs.ok&&vs.left!==null&&!tu&&view!=='game'&&lim()){tm.textContent='⏳ '+fmt(vs.left);tm.style.display='block';
-  WARN.forEach(m=>{if(vs.left>m*60)fired[m]=0;else if(!fired[m]){fired[m]=1;if(vs.left>m*60-20&&view==='play')warn(m)}})}
- else tm.style.display='none'},1000);
+ const showW=vs.ok&&vs.left!==null&&!tu&&view!=='game'&&lim(),pn=prTick();
+ if(pn)prWarn(pn);
+ const showP=pn&&(A.prayer||{}).badge!==false&&!tu&&view!=='game'&&view!=='prayer';
+ if(showW||showP){tm.innerHTML=(showW?'<span>⏳ '+fmt(vs.left)+'</span>':'')+(showP?'<span class="tp">🕌 '+prNm(pn.nx)+' '+prFM(pn.t)+' · '+prDurS(pn.diff)+'</span>':'');tm.style.display='block'}else tm.style.display='none';
+ if(showW)WARN.forEach(m=>{if(vs.left>m*60)fired[m]=0;else if(!fired[m]){fired[m]=1;if(vs.left>m*60-20&&view==='play')warn(m)}})},1000);
 let ldK=0;setInterval(()=>{if(ldK++%(FB_ON?3:1)===0)load()},20000);
 
 function draw(){const a=$('#app');if(view!=='stars')mwOff();if(view==='stars'){drawStars();return}if(view==='games'){drawGames();return}if(view==='game'){drawGame();return}if(view==='gal'){drawGal();return}if(view==='galv'){drawGv();return}if(view==='prayer'){drawPrayer();return}
@@ -448,7 +452,7 @@ function galLeave(){clearInterval(gT);GAL.L={img:{items:[],next:''},vid:{items:[
 
 /* PRAY-START: Jadwal sholat (layanan gratis Aladhan, diambil sekali per hari) */
 const PRN=[['Fajr','Subuh','🌄'],['Sunrise','Terbit','🌅'],['Dhuhr','Dzuhur','☀️'],['Asr','Ashar','🌤️'],['Maghrib','Maghrib','🌇'],['Isha','Isya','🌃']],PR5=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
-let PRC=null,PRS='',prBusy=false;
+let PRC=null,PRS='',prBusy=false,prLast=0,prSeen='',prW=J('pw','');
 const prCfg=()=>{const p=A.prayer||{};return{city:(p.city||'Semarang').trim(),country:(p.country||'Indonesia').trim(),method:+p.method||20,adj:+p.adj||0,lat:p.lat,lon:p.lon}};
 const prKey=()=>{const c=prCfg();return[c.city,c.country,c.method,c.adj,c.lat||'',c.lon||''].join('|')};
 const prHM=s=>{const m=String(s).match(/(\d{1,2}):(\d{2})/);return m?+m[1]*60+ +m[2]:null};
@@ -479,6 +483,15 @@ function prUpdate(){if(!PRC)return;if(PRC.d!==ds(new Date())&&!prBusy){prBusy=tr
  document.querySelectorAll('.pcard').forEach(el=>{el.classList.toggle('nx',el.dataset.k===n.nx);el.classList.toggle('cur',el.dataset.k===n.cur)})}
 async function prayerOpen(){view='prayer';PRS=PRC&&PRC.k===prKey()&&PRC.d===ds(new Date())?'ok':'load';draw();
  try{PRC=await prGet();PRS='ok'}catch(e){PRS=PRC&&PRC.k===prKey()?'ok':'err'}if(view==='prayer')draw()}
+const prDurS=m=>{m=Math.ceil(m);if(m<=0)return 'sebentar lagi';const h=Math.floor(m/60),mm=m%60;return((h?h+'j ':'')+(mm?mm+'m':'')).trim()||'0m'};
+function prBg(){if(prBusy||Date.now()-prLast<300000)return;prBusy=true;prGet().then(c=>{PRC=c;prLast=0}).catch(()=>{prLast=Date.now()}).then(()=>{prBusy=false})}
+function prTick(){if(A.prayer&&A.prayer.on===false)return null;const k=prKey();if(prSeen!==k){prSeen=k;prLast=0}
+ if(!PRC||PRC.k!==k||PRC.d!==ds(new Date()))prBg();
+ return PRC&&PRC.k===k?prNext(PRC):null}
+function prWarn(n){if(!n||locked||(A.prayer||{}).warn===false||n.diff>10||n.diff<=0)return;const key=n.nx+'@'+ds(new Date());if(prW===key)return;prW=key;try{localStorage.setItem('pw',JSON.stringify(key))}catch(e){}
+ const el=$('#pw'),m=Math.ceil(n.diff);el.textContent='🕌 '+m+' menit lagi masuk waktu '+prNm(n.nx);el.style.display='block';tone(3,660);
+ if(view!=='play')say('Sebentar lagi masuk waktu '+prNm(n.nx)+'. '+m+' menit lagi.');
+ setTimeout(()=>{el.style.display='none'},20000)}
 /* PRAY-END */
 document.body.classList.toggle('lite',!!A.lite);hadKids=ls(A.kids).length>0;if(FB_ON){pull();conn();setInterval(()=>{if(Date.now()-sseT>90000)pull()},30000);setInterval(pull,600000);
  let geT='';setInterval(async()=>{if(view!=='games'&&view!=='game')return;try{const x=await (await fetch(DB+'/app/game/enabled.json?_='+Date.now(),{cache:'no-store'})).text();if(geT&&x!==geT)pull();geT=x}catch(e){}},5000)}

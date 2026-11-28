@@ -240,6 +240,8 @@ function rTs(){const p=A.prayer||{},on=p.on!==false;$('ts').innerHTML=`<h2>Jadwa
  <h2 style="margin-top:14px">Lokasi</h2>
  <div class="r"><input class="w" id="pc" value="${esc(p.city||'Semarang')}" placeholder="Kota atau kabupaten"><input class="w" id="pk" value="${esc(p.country||'Indonesia')}" placeholder="Negara"></div>
  <div class="r"><select id="pm" class="w">${PM.map(([v,n])=>`<option value="${v}"${(+p.method||20)===v?' selected':''}>${n}</option>`).join('')}</select><label>Koreksi (menit) <input id="pa" type="number" min="-15" max="15" value="${+p.adj||0}" style="width:80px"></label></div>
+ <div class="r"><label class="chk"><input type="checkbox" id="pwn"${p.warn===false?'':' checked'}> Peringatan 10 menit sebelum waktu sholat</label></div>
+ <div class="r"><label class="chk"><input type="checkbox" id="pbd"${p.badge===false?'':' checked'}> Tampilkan sholat berikutnya di samping sisa waktu tonton</label></div>
  <div class="r"><input id="pla" value="${esc(p.lat||'')}" placeholder="Lintang (opsional)" style="width:150px"><input id="plo" value="${esc(p.lon||'')}" placeholder="Bujur (opsional)" style="width:150px"></div>
  <small>Kalau nama daerah tidak dikenali, isi lintang dan bujur (contoh Jakarta: -6.2088 dan 106.8456). Bila keduanya diisi, koordinat yang dipakai. Koreksi menit ditambahkan ke semua waktu (misalnya +2 untuk kehati-hatian).</small>
  <div class="r"><button data-act="psave">Simpan</button><button class="s" data-act="ptest">Uji jadwal</button></div><small id="pres"></small>`}
@@ -305,7 +307,7 @@ $('fbon').onclick=async e=>{const b=e.target.closest('button');if(!b)return;cons
  else if(a==='psave'){const city=$('pc').value.trim(),ctry=$('pk').value.trim(),la=$('pla').value.trim(),lo=$('plo').value.trim();
   if(!!la!==!!lo||(la&&(isNaN(+la)||isNaN(+lo))))return alert('Isi lintang dan bujur dengan angka, atau kosongkan keduanya.');
   if(!city&&!la)return alert('Isi nama kota atau koordinat.');
-  ref('prayer').set({on:!(A.prayer&&A.prayer.on===false),city:city||'Semarang',country:ctry||'Indonesia',method:+$('pm').value,adj:+$('pa').value||0,lat:la||null,lon:lo||null})}
+  ref('prayer').set({on:!(A.prayer&&A.prayer.on===false),city:city||'Semarang',country:ctry||'Indonesia',method:+$('pm').value,adj:+$('pa').value||0,warn:$('pwn').checked,badge:$('pbd').checked,lat:la||null,lon:lo||null})}
  else if(a==='ptest')pTest()
  else if(a==='ltog'){db.ref('gal/cfg/on').set(!(GL.cfg&&GL.cfg.on))}
  else if(a==='lsave'){const key=$('dk').value.trim(),fid=dfId($('df').value.trim());if(!key||!fid)return alert('Isi kunci API dan link folder yang benar.');db.ref('gal/cfg').set({key,folder:fid,on:!GL.cfg||GL.cfg.on!==false})}
