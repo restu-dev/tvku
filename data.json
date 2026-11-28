@@ -540,7 +540,16 @@
    "name": "Edukasi Islami",
    "icon": "📁",
    "color": "#2a2466",
-   "videos": []
+   "videos": [
+    {
+     "id": "wto17Tw0w-w",
+     "title": "Rukun Islam"
+    },
+    {
+     "id": "vOIbblb6MkE",
+     "title": "Rukun Iman"
+    }
+   ]
   }
  ],
  "child": {
